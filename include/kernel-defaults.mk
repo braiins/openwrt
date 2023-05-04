@@ -42,7 +42,13 @@ else
 	if [ -d $(LINUX_DIR) ]; then \
 		rmdir $(LINUX_DIR); \
 	fi
-	ln -s $(CONFIG_EXTERNAL_KERNEL_TREE) $(LINUX_DIR)
+	# Check if the provided external path is absolute or relative
+	# if the path is relative, build the proper path from the openwrt top dir.
+	if [ "${CONFIG_EXTERNAL_KERNEL_TREE:0:1}" = "/" ]; then \
+		ln -s $(CONFIG_EXTERNAL_KERNEL_TREE) $(LINUX_DIR); \
+	else \
+		ln -s $(TOPDIR)/$(CONFIG_EXTERNAL_KERNEL_TREE) $(LINUX_DIR); \
+	fi
 	if [ -d $(LINUX_DIR)/user_headers ]; then \
 		rm -rf $(LINUX_DIR)/user_headers; \
 	fi
