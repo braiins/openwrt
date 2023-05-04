@@ -91,6 +91,7 @@ $(eval $(call KernelPackage,ipt-core))
 define KernelPackage/nf-conntrack
   SUBMENU:=$(NF_MENU)
   TITLE:=Netfilter connection tracking
+  DEPENDS:=+kmod-lib-crc32c
   KCONFIG:= \
         CONFIG_NETFILTER=y \
         CONFIG_NETFILTER_ADVANCED=y \
