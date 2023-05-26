@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=confuse
-PKG_VERSION:=3.0
+PKG_VERSION:=3.2.2
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
-PKG_SOURCE_URL:=https://github.com/martinh/libconfuse/releases/download/v$(PKG_VERSION)
-PKG_HASH:=bb75174e02aa8b44fa1a872a47beeea1f5fe715ab669694c97803eb6127cc861
+PKG_SOURCE_URL:=https://github.com/libconfuse/libconfuse/releases/download/v$(PKG_VERSION)
+PKG_HASH:=a9240b653d02e8cfc52db48e8c4224426e528e1faa09b65e8ca08a197fad210b
 
 PKG_FIXUP:=autoreconf
 HOST_BUILD_PARALLEL:=1
