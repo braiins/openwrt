@@ -8,6 +8,14 @@ all: $(if $(DUMP),dumpinfo,$(if $(CHECK),check,compile))
 
 include $(INCLUDE_DIR)/download.mk
 
+ifdef USE_SOURCE_DIR
+  # Check if the provided external path is absolute or relative
+  # if the path is relative, build the proper path from the openwrt top dir.
+  ifeq ($(filter /%,$(USE_SOURCE_DIR)),)
+    USE_SOURCE_DIR := $(TOPDIR)/$(USE_SOURCE_DIR)
+  endif
+endif
+
 PKG_BUILD_DIR ?= $(BUILD_DIR)/$(if $(BUILD_VARIANT),$(PKG_NAME)-$(BUILD_VARIANT)/)$(PKG_NAME)$(if $(PKG_VERSION),-$(PKG_VERSION))
 PKG_INSTALL_DIR ?= $(PKG_BUILD_DIR)/ipkg-install
 PKG_BUILD_PARALLEL ?=
