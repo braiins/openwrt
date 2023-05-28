@@ -1,0 +1,3 @@
+config EXTERNAL_UBOOT_STM32MP1_TREE
+    string "Use external STM32MP1 U-Boot tree" if DEVEL
+    default ""
