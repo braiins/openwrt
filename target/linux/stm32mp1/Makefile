@@ -7,7 +7,7 @@ include $(TOPDIR)/rules.mk
 ARCH:=arm
 BOARD:=stm32mp1
 BOARDNAME:=STMicroelectronics STM32MP1 SoCs
-FEATURES:=fpu gpio rtc usb usbgadget squashfs targz boot-part rootfs-part
+FEATURES:=fpu gpio rtc usb usbgadget ext4 squashfs targz boot-part rootfs-part
 SUBTARGETS:=ii1_stm
 MAINTAINER:=Braiins <braiins@braiins.com>
 
