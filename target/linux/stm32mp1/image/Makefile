@@ -9,12 +9,6 @@ KERNEL_LOADADDR := 0xC2000040
 
 TARGET_NAME = $(subst _,-,$(SUBTARGET))_$(DEVICE_NAME)
 
-define Image/Prepare
-	$(INSTALL_DIR) -p $(TARGET_DIR)/boot
-	$(INSTALL_BIN) $(KDIR)/zImage $(TARGET_DIR)/boot/
-	$(INSTALL_BIN) $(DTS_DIR)/stm32mp157c-ii1.dtb $(TARGET_DIR)/boot/
-endef
-
 define Build/gpt
 	rm -rf $@.tmp
 	mkdir -p $@.tmp/data $@.tmp/tmp
