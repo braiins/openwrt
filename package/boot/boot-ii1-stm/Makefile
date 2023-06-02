@@ -29,6 +29,8 @@ include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/kernel.mk
 
 LINUX_BOOT_DIR:=$(LINUX_DIR)/arch/$(LINUX_KARCH)/boot
+DTB_DEFAULT_NAME:=stm32mp157c-ii1
+DTB_VARIANT_NAME:=$(DTB_DEFAULT_NAME)$(call qstrip,$(CONFIG_DTB_VARIANT_stm32mp1_ii1))
 
 define Package/boot-ii1-stm
   SECTION:=boot
@@ -44,10 +46,14 @@ endef
 define Build/Compile
 endef
 
+define Package/boot-ii1-stm/config
+	source "$(SOURCE)/Config.in"
+endef
+
 define Package/boot-ii1-stm/install
 	$(INSTALL_DIR) $(1)/boot
 	$(INSTALL_BIN) $(LINUX_BOOT_DIR)/zImage $(1)/boot/
-	$(INSTALL_BIN) $(LINUX_BOOT_DIR)/dts/stm32mp157c-ii1.dtb $(1)/boot/
+	$(INSTALL_BIN) $(LINUX_BOOT_DIR)/dts/$(DTB_VARIANT_NAME).dtb $(1)/boot/$(DTB_DEFAULT_NAME).dtb
 endef
 
 $(eval $(call BuildPackage,boot-ii1-stm))

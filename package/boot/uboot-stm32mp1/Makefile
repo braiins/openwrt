@@ -35,6 +35,8 @@ endif
 include $(INCLUDE_DIR)/u-boot.mk
 include $(INCLUDE_DIR)/package.mk
 
+DTB_VARIANT_NAME_ii1:=stm32mp157c-ii1$(call qstrip,$(CONFIG_DTB_VARIANT_stm32mp1_ii1))
+
 define U-Boot/Default
   BUILD_TARGET:=stm32mp1
   UBOOT_CONFIG:=stm32mp15_$(1)
@@ -44,17 +46,22 @@ define U-Boot/ii1-stm_sd
   NAME:=U-Boot $(PKG_VERSION) for STM32MP157C Braiins Control Board (SD)
   BUILD_SUBTARGET:=ii1_stm
   BUILD_DEVICES:=sd
+  DTB_FILE_NAME:=$(DTB_VARIANT_NAME_ii1)
 endef
 
 define U-Boot/ii1-stm_emmc
   NAME:=U-Boot $(PKG_VERSION) for STM32MP157C Braiins Control Board (eMMC)
   BUILD_SUBTARGET:=ii1_stm
   BUILD_DEVICES:=emmc
+  DTB_FILE_NAME:=$(DTB_VARIANT_NAME_ii1)
 endef
 
 UBOOT_TARGETS := \
 	ii1-stm_sd \
 	ii1-stm_emmc
+
+UBOOT_MAKE_FLAGS += \
+	DEVICE_TREE=$(DTB_FILE_NAME)
 
 define Build/InstallDev
 	$(INSTALL_DIR) $(STAGING_DIR_IMAGE)

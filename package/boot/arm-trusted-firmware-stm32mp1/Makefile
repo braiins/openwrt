@@ -36,6 +36,8 @@ include $(INCLUDE_DIR)/trusted-firmware-a.mk
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/kernel.mk
 
+DTB_VARIANT_NAME_ii1:=stm32mp157c-ii1$(call qstrip,$(CONFIG_DTB_VARIANT_stm32mp1_ii1))
+
 define Trusted-Firmware-A/Default
   BUILD_TARGET:=stm32mp1
   PLAT:=stm32mp1
@@ -48,7 +50,7 @@ define Trusted-Firmware-A/ii1-stm_sd
   BUILD_SUBTARGET:=ii1_stm
   BUILD_DEVICES:=sd
   BOOT_DEVICE:=sd
-  DTB_FILE_NAME:=stm32mp157c-ii1
+  DTB_FILE_NAME:=$(DTB_VARIANT_NAME_ii1)
 endef
 
 define Trusted-Firmware-A/ii1-stm_emmc
@@ -56,7 +58,7 @@ define Trusted-Firmware-A/ii1-stm_emmc
   BUILD_SUBTARGET:=ii1_stm
   BUILD_DEVICES:=emmc
   BOOT_DEVICE:=emmc
-  DTB_FILE_NAME:=stm32mp157c-ii1
+  DTB_FILE_NAME:=$(DTB_VARIANT_NAME_ii1)
 endef
 
 TFA_TARGETS:= \
