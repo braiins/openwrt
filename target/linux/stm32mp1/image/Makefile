@@ -17,6 +17,10 @@ define Build/gpt
 	ln -s $(STAGING_DIR_IMAGE)/$(TARGET_NAME)-fip.bin $@.tmp/data/fip.bin
 	ln -s $(IMAGE_ROOTFS) $@.tmp/data/rootfs.img
 
+    # Prepare partition for read-write overlay with Ext4 filesystem
+	dd if=/dev/zero of=$@.tmp/data/rootfs_data.img bs=1024k count=0 seek=88
+	$(STAGING_DIR_HOST)/bin/mkfs.ext4 $@.tmp/data/rootfs_data.img
+
 	genimage \
 		--tmppath $@.tmp/tmp \
 		--inputpath $@.tmp/data \
@@ -30,19 +34,19 @@ endef
 define Device/Default
   KERNEL := kernel-bin
   IMAGES :=
-  IMAGE/gpt.img := gpt
+  IMAGE/gpt.img.gz := gpt | gzip
 endef
 
 define Device/sd
   DEVICE_TITLE := STM32MP1 SD Card Image
-  FILESYSTEMS := ext4
-  IMAGES := gpt.img
+  FILESYSTEMS := squashfs
+  IMAGES := gpt.img.gz
 endef
 TARGET_DEVICES += sd
 
 define Device/emmc
   DEVICE_TITLE := STM32MP1 eMMC Image
-  FILESYSTEMS := ext4
+  FILESYSTEMS := squashfs
 endef
 TARGET_DEVICES += emmc
 
