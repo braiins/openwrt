@@ -19,5 +19,6 @@ include $(INCLUDE_DIR)/target.mk
 
 DEFAULT_PACKAGES += uboot-envtools
 DEFAULT_PACKAGES += mkf2fs e2fsprogs
+DEFAULT_PACKAGES += kmod-gpio-button-hotplug
 
 $(eval $(call BuildTarget))
