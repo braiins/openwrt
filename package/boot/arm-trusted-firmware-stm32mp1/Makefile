@@ -83,10 +83,10 @@ TFA_BUILD_DIR:=$(if $(CONFIG_ARM_TRUSTED_FIRMWARE_STM32MP1_DEBUG),debug,release)
 
 define Package/trusted-firmware-a/install
 	$(INSTALL_DIR) $(STAGING_DIR_IMAGE)
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/build-$(BUILD_VARIANT)/$(PLAT)/$(TFA_BUILD_DIR)/tf-a-$(DTB_FILE_NAME).stm32 \
-		$(STAGING_DIR_IMAGE)/$(BUILD_VARIANT)-tf-a.stm32
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/build-$(BUILD_VARIANT)/$(PLAT)/$(TFA_BUILD_DIR)/fip.bin \
-		$(STAGING_DIR_IMAGE)/$(BUILD_VARIANT)-fip.bin
+	gzip -f -9n -c $(PKG_BUILD_DIR)/build-$(BUILD_VARIANT)/$(PLAT)/$(TFA_BUILD_DIR)/tf-a-$(DTB_FILE_NAME).stm32 \
+		> $(STAGING_DIR_IMAGE)/$(BUILD_VARIANT)-tf-a.stm32.gz
+	gzip -f -9n -c $(PKG_BUILD_DIR)/build-$(BUILD_VARIANT)/$(PLAT)/$(TFA_BUILD_DIR)/fip.bin \
+		> $(STAGING_DIR_IMAGE)/$(BUILD_VARIANT)-fip.bin.gz
 endef
 
 define Build/Clean
