@@ -17,10 +17,6 @@ define Build/stm32mp1-sdcard
 	gzip -dc $(FIP_GZ_PATH) > $@.tmp/data/fip.bin
 	ln -s $(IMAGE_ROOTFS) $@.tmp/data/rootfs.img
 
-    # Prepare partition for read-write overlay with Ext4 filesystem
-	dd if=/dev/zero of=$@.tmp/data/rootfs_data.img bs=1024k count=0 seek=88
-	$(STAGING_DIR_HOST)/bin/mkfs.ext4 $@.tmp/data/rootfs_data.img
-
 	genimage \
 		--tmppath $@.tmp/tmp \
 		--inputpath $@.tmp/data \
