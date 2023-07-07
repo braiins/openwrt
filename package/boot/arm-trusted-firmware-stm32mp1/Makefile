@@ -66,6 +66,7 @@ TFA_TARGETS:= \
 	ii1-stm_emmc
 
 TFA_MAKE_FLAGS += \
+	BUILD_BASE=build-$(BUILD_VARIANT) \
 	DTC=$(LINUX_DIR)/scripts/dtc/dtc \
 	ARCH=aarch32 \
 	ARM_ARCH_MAJOR=7 \
@@ -82,9 +83,9 @@ TFA_BUILD_DIR:=$(if $(CONFIG_ARM_TRUSTED_FIRMWARE_STM32MP1_DEBUG),debug,release)
 
 define Package/trusted-firmware-a/install
 	$(INSTALL_DIR) $(STAGING_DIR_IMAGE)
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/build/$(PLAT)/$(TFA_BUILD_DIR)/tf-a-$(DTB_FILE_NAME).stm32 \
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/build-$(BUILD_VARIANT)/$(PLAT)/$(TFA_BUILD_DIR)/tf-a-$(DTB_FILE_NAME).stm32 \
 		$(STAGING_DIR_IMAGE)/$(BUILD_VARIANT)-tf-a.stm32
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/build/$(PLAT)/$(TFA_BUILD_DIR)/fip.bin \
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/build-$(BUILD_VARIANT)/$(PLAT)/$(TFA_BUILD_DIR)/fip.bin \
 		$(STAGING_DIR_IMAGE)/$(BUILD_VARIANT)-fip.bin
 endef
 
