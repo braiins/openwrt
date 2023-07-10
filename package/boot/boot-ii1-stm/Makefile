@@ -52,8 +52,8 @@ endef
 
 define Package/boot-ii1-stm/install
 	$(INSTALL_DIR) $(1)/boot
-	$(INSTALL_BIN) $(LINUX_BOOT_DIR)/zImage $(1)/boot/
-	$(INSTALL_BIN) $(LINUX_BOOT_DIR)/dts/$(DTB_VARIANT_NAME).dtb $(1)/boot/$(DTB_DEFAULT_NAME).dtb
+	$(INSTALL_DATA) $(LINUX_BOOT_DIR)/zImage $(1)/boot/
+	$(INSTALL_DATA) $(LINUX_BOOT_DIR)/dts/$(DTB_VARIANT_NAME).dtb $(1)/boot/$(DTB_DEFAULT_NAME).dtb
 endef
 
 $(eval $(call BuildPackage,boot-ii1-stm))
