@@ -31,6 +31,7 @@ include $(INCLUDE_DIR)/kernel.mk
 LINUX_BOOT_DIR:=$(LINUX_DIR)/arch/$(LINUX_KARCH)/boot
 DTB_DEFAULT_NAME:=stm32mp157c-ii1
 DTB_VARIANT_NAME:=$(DTB_DEFAULT_NAME)$(call qstrip,$(CONFIG_DTB_VARIANT_stm32mp1_ii1))
+BOOT_SCR_NAME:=boot
 
 define Package/boot-ii1-stm
   SECTION:=boot
@@ -44,6 +45,10 @@ define Package/boot-ii1-stm/description
 endef
 
 define Build/Compile
+	$(STAGING_DIR_HOST)/bin/mkimage -A $(ARCH) -O linux -T script -C none \
+		-n 'Braiins U-Boot script (stm32mp15-ii1)' \
+		-d ./files/$(BOOT_SCR_NAME).txt \
+		$(PKG_BUILD_DIR)/$(BOOT_SCR_NAME).scr
 endef
 
 define Package/boot-ii1-stm/config
@@ -54,6 +59,7 @@ define Package/boot-ii1-stm/install
 	$(INSTALL_DIR) $(1)/boot
 	$(INSTALL_DATA) $(LINUX_BOOT_DIR)/zImage $(1)/boot/
 	$(INSTALL_DATA) $(LINUX_BOOT_DIR)/dts/$(DTB_VARIANT_NAME).dtb $(1)/boot/$(DTB_DEFAULT_NAME).dtb
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/$(BOOT_SCR_NAME).scr $(1)/boot
 endef
 
 $(eval $(call BuildPackage,boot-ii1-stm))
