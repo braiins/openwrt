@@ -9,5 +9,7 @@ setenv kernel_rootfs "/dev/mmcblk${boot_instance}p${rootfs_part}"
 setenv bootargs "root=${kernel_rootfs} rootwait rw earlyprintk console=ttySTM0,115200"
 printenv bootargs
 
-echo "Booting BOS..."
+echo ""
+echo "Booting BOS from $kernel_rootfs: PARTLABEL=\"rootfs${rootfs_index}\"..."
+echo ""
 bootz $kernel_addr_r - $fdt_addr_r
