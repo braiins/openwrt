@@ -1,0 +1,45 @@
+#!/bin/sh
+
+FW_ENV_CONFIG_PATH="/etc/fw_env.config"
+
+log_default_config() {
+    echo "default-config: $1" > /dev/kmsg
+}
+
+_config_fw_env() {
+	log_default_config "Creating $FW_ENV_CONFIG_PATH"
+
+	local root_dev=$(sed "s/root=\(.*\)p. .*/\1/g" /proc/cmdline)
+	local fip_dev=$(blkid --match-token PARTLABEL="$PART_NAME_FIP" \
+			--output device ${root_dev}p*)
+
+	if [ -z "$fip_dev" ]; then
+		log_default_config "Partition 'fip' cannot be found!"
+		# Generate default config with disabled device when FIP partition
+		# cannot be found
+		fip_dev="#/dev/mmcblk0p1"
+	fi
+
+	cat > "$FW_ENV_CONFIG_PATH" <<-END
+		# Configuration file for fw_(printenv/saveenv) utility.
+		# Up to two entries are valid, in this case the redundant
+		# environment sector is assumed present.
+
+		# MMC device name   Device offset   Env. size
+		${fip_dev}      -0x4000         0x2000
+		${fip_dev}      -0x2000         0x2000
+	END
+
+	return 0
+}
+
+default_config() {
+	. /lib/functions/bos-defaults.sh
+
+	# generate only if 'fw_env.config' does not exist
+	[ -e "$FW_ENV_CONFIG_PATH" ] || _config_fw_env
+
+	return 0
+}
+
+boot_hook_add preinit_main default_config
