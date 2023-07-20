@@ -5,9 +5,32 @@
 include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/image.mk
 
+# format version of sysupgrade image
+# it is possible to upgrade firmware only with supported formats
+FORMAT_VERSION := '\"format_version\": \"1\"'
+
+BOS_MODE_SD := '\"bos_mode\": \"sd\"'
+BOS_MODE_EMMC := '\"bos_mode\": \"emmc\"'
+
 KERNEL_LOADADDR := 0xC2000040
 
+SUBTARGET_NAME = $(subst _,-,$(SUBTARGET))
 TARGET_NAME = $(subst _,-,$(SUBTARGET))_$(DEVICE_NAME)
+
+define Build/stm32mp1-sysupgrade-tar
+	rm -rf $@.tmp
+	mkdir -p $@.tmp/sysupgrade-$(BOARD_NAME)
+
+	echo "BOARD=$(BOARD_NAME)" > $@.tmp/sysupgrade-$(BOARD_NAME)/CONTROL
+	gzip -dc $(TFA_GZ_PATH) > $@.tmp/sysupgrade-$(BOARD_NAME)/tf-a.stm32
+	gzip -dc $(FIP_GZ_PATH) > $@.tmp/sysupgrade-$(BOARD_NAME)/fip.bin
+	ln -s $(IMAGE_ROOTFS) $@.tmp/sysupgrade-$(BOARD_NAME)/rootfs.img
+
+	tar -C $@.tmp --sort=name --owner=0 --group=0 --numeric-owner -cvhf $@ \
+		sysupgrade-$(BOARD_NAME)
+
+	rm -rf $@.tmp
+endef
 
 define Build/stm32mp1-sdcard
 	rm -rf $@.tmp
@@ -56,6 +79,8 @@ define Device/Default
   TFA_GZ_PATH = $(STAGING_DIR_IMAGE)/$$(TARGET_NAME)-tf-a.stm32.gz
   FIP_GZ_PATH = $(STAGING_DIR_IMAGE)/$$(TARGET_NAME)-fip.bin.gz
   UBOOT_PATH = $(STAGING_DIR_IMAGE)/$$(TARGET_NAME)-u-boot-nodtb.bin
+  BOARD_NAME = $$(SUBTARGET)-$$(DEVICE_NAME)
+  SUPPORTED_DEVICES = $(SUBTARGET_COMPATIBLES)
   BOOT_TFA_SIZE := 1024k
   BOOT_FIP_SIZE := 2048k
   MMC_BLOCK_SIZE := 512
@@ -66,7 +91,9 @@ endef
 define Device/sd
   DEVICE_TITLE := STM32MP1 SD Card Image
   FILESYSTEMS := squashfs
-  IMAGES := user.img.gz
+  IMAGES := sysupgrade.tar user.img.gz
+  IMAGE_METADATA := $(FORMAT_VERSION),$(BOS_MODE_SD)
+  IMAGE/sysupgrade.tar := stm32mp1-sysupgrade-tar | append-metadata
   IMAGE/user.img.gz := stm32mp1-sdcard | gzip
 endef
 TARGET_DEVICES += sd
@@ -74,8 +101,10 @@ TARGET_DEVICES += sd
 define Device/emmc
   DEVICE_TITLE := STM32MP1 eMMC Image
   FILESYSTEMS := squashfs
-  IMAGES := mmcblk0gp0.img
+  IMAGES := sysupgrade.tar mmcblk0gp0.img
   ARTIFACTS := mmcblk0bootx.img.gz mmcblk0.img.gz
+  IMAGE_METADATA := $(FORMAT_VERSION),$(BOS_MODE_EMMC)
+  IMAGE/sysupgrade.tar := stm32mp1-sysupgrade-tar | append-metadata
   IMAGE/mmcblk0gp0.img := append-rootfs | pad-to $$$$(MMC_BLOCK_SIZE)
   ARTIFACT/mmcblk0bootx.img.gz := \
 	append-tf-a | pad-to $$$$(BOOT_TFA_SIZE) | \

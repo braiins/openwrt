@@ -7,3 +7,7 @@ include $(TOPDIR)/rules.mk
 BOARDNAME:=Braiins Control Board v1 (STM32MP1)
 CPU_TYPE:=cortex-a7
 CPU_SUBTYPE:=neon-vfpv4
+
+SUBTARGET_COMPATIBLES := \
+	braiins,ii1-stm \
+	braiins,stm32mp157c-ii1-am2
