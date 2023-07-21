@@ -2,7 +2,7 @@ echo "Loading Linux kernel..."
 load mmc ${boot_instance}:${rootfs_part} $kernel_addr_r boot/zImage || exit 1
 
 echo "Loading Device Tree..."
-load mmc ${boot_instance}:${rootfs_part} $fdt_addr_r boot/stm32mp157c-ii1.dtb || exit 1
+load mmc ${boot_instance}:${rootfs_part} $fdt_addr_r boot/$fdtfile || exit 1
 
 echo "Boot environment:"
 setenv kernel_rootfs "/dev/mmcblk${boot_instance}p${rootfs_part}"

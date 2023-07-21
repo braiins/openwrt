@@ -25,45 +25,45 @@ include $(TOPDIR)/rules.mk
 PKG_VERSION:=2.4
 PKG_RELEASE:=1
 
-ifeq ($(strip $(CONFIG_EXTERNAL_ARM_TRUSTED_FIRMWARE_STM32MP1_TREE)),"")
-	$(error Empty CONFIG_EXTERNAL_ARM_TRUSTED_FIRMWARE_STM32MP1_TREE)
+ifeq ($(strip $(CONFIG_EXTERNAL_ARM_TRUSTED_FIRMWARE_STM32MP15_TREE)),"")
+	$(error Empty CONFIG_EXTERNAL_ARM_TRUSTED_FIRMWARE_STM32MP15_TREE)
 else
 	PKG_SOURCE_VERSION:=local
-    USE_SOURCE_DIR:=$(call qstrip,$(CONFIG_EXTERNAL_ARM_TRUSTED_FIRMWARE_STM32MP1_TREE))
+    USE_SOURCE_DIR:=$(call qstrip,$(CONFIG_EXTERNAL_ARM_TRUSTED_FIRMWARE_STM32MP15_TREE))
 endif
 
 include $(INCLUDE_DIR)/trusted-firmware-a.mk
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/kernel.mk
 
-DTB_VARIANT_NAME_ii1:=stm32mp157c-ii1$(call qstrip,$(CONFIG_DTB_VARIANT_stm32mp1_ii1))
+DTB_VARIANT_NAME_ii1_am2:=stm32mp157c-ii1-am2$(call qstrip,$(CONFIG_DTB_VARIANT_stm32mp15_ii1))
 
 define Trusted-Firmware-A/Default
-  BUILD_TARGET:=stm32mp1
+  BUILD_TARGET:=stm32mp15
   PLAT:=stm32mp1
   BOOT_DEVICE:=
   DEPENDS:=@LINUX_5_10 +u-boot-$(1)
 endef
 
-define Trusted-Firmware-A/ii1-stm_sd
-  NAME:=TF-A $(PKG_VERSION) for STM32MP157C Braiins Control Board (SD)
-  BUILD_SUBTARGET:=ii1_stm
+define Trusted-Firmware-A/ii1-am2_sd
+  NAME:=TF-A $(PKG_VERSION) for Braiins Control Board (stm32mp157c-ii1-am2/SD)
+  BUILD_SUBTARGET:=ii1
   BUILD_DEVICES:=sd
   BOOT_DEVICE:=sd
-  DTB_FILE_NAME:=$(DTB_VARIANT_NAME_ii1)
+  DTB_FILE_NAME:=$(DTB_VARIANT_NAME_ii1_am2)
 endef
 
-define Trusted-Firmware-A/ii1-stm_emmc
-  NAME:=TF-A $(PKG_VERSION) for STM32MP157C Braiins Control Board (eMMC)
-  BUILD_SUBTARGET:=ii1_stm
+define Trusted-Firmware-A/ii1-am2_emmc
+  NAME:=TF-A $(PKG_VERSION) for Braiins Control Board (stm32mp157c-ii1-am2/eMMC)
+  BUILD_SUBTARGET:=ii1
   BUILD_DEVICES:=emmc
   BOOT_DEVICE:=emmc
-  DTB_FILE_NAME:=$(DTB_VARIANT_NAME_ii1)
+  DTB_FILE_NAME:=$(DTB_VARIANT_NAME_ii1_am2)
 endef
 
 TFA_TARGETS:= \
-	ii1-stm_sd \
-	ii1-stm_emmc
+	ii1-am2_sd \
+	ii1-am2_emmc
 
 TFA_MAKE_FLAGS += \
 	BUILD_BASE=build-$(BUILD_VARIANT) \
@@ -76,10 +76,10 @@ TFA_MAKE_FLAGS += \
 	$(if $(filter emmc,$(BOOT_DEVICE)),STM32MP_EMMC=1) \
 	BL33=$(STAGING_DIR_IMAGE)/$(BUILD_VARIANT)-u-boot-nodtb.bin \
 	BL33_CFG=$(STAGING_DIR_IMAGE)/$(BUILD_VARIANT)-u-boot.dtb \
-	$(if $(CONFIG_ARM_TRUSTED_FIRMWARE_STM32MP1_DEBUG),DEBUG=1) \
+	$(if $(CONFIG_ARM_TRUSTED_FIRMWARE_STM32MP15_DEBUG),DEBUG=1) \
 	all fip
 
-TFA_BUILD_DIR:=$(if $(CONFIG_ARM_TRUSTED_FIRMWARE_STM32MP1_DEBUG),debug,release)
+TFA_BUILD_DIR:=$(if $(CONFIG_ARM_TRUSTED_FIRMWARE_STM32MP15_DEBUG),debug,release)
 
 define Package/trusted-firmware-a/install
 	$(INSTALL_DIR) $(STAGING_DIR_IMAGE)
@@ -94,7 +94,7 @@ define Build/Clean
 	rm -rf $(STAGING_DIR_IMAGE)/$(BUILD_VARIANT)-fip.bin
 endef
 
-define Package/trusted-firmware-a-ii1-stm_sd/config
+define Package/trusted-firmware-a-ii1-am2_sd/config
 	source "$(SOURCE)/Config.in"
 endef
 

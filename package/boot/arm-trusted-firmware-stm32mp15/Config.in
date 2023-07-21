@@ -1,7 +1,7 @@
-config EXTERNAL_ARM_TRUSTED_FIRMWARE_STM32MP1_TREE
-    string "Use external STM32MP1 TF-A tree" if DEVEL
+config EXTERNAL_ARM_TRUSTED_FIRMWARE_STM32MP15_TREE
+    string "Use external STM32MP15 TF-A tree" if DEVEL
     default ""
 
-config ARM_TRUSTED_FIRMWARE_STM32MP1_DEBUG
-    bool "Enable debug build for STM32MP1 TF-A"
+config ARM_TRUSTED_FIRMWARE_STM32MP15_DEBUG
+    bool "Enable debug build for STM32MP15 TF-A"
     default n
