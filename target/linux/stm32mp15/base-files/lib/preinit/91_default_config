@@ -6,6 +6,28 @@ log_default_config() {
     echo "default-config: $1" > /dev/kmsg
 }
 
+_config_miner_hwid() {
+	local miner_hwid=$(
+		dd if="$NVMEM_PATH" bs=$NVMEM_WORD_SIZE \
+			skip=$NVMEM_OTP_MINER_HWID \
+			count=3 2>/dev/null \
+		| base64
+	)
+
+	if [ -z "$miner_hwid" ]; then
+		log_default_config "miner_hwid: Cannot read OTP memory!"
+		miner_hwid=$(
+			dd if=/dev/urandom bs=1 count=12 2>/dev/null \
+			| base64 \
+			| tr "+/" "ab"
+		)
+	fi
+
+	log_default_config "miner_hwid: $miner_hwid"
+	echo "$miner_hwid" > "$MINER_HWID_PATH"
+	return 0
+}
+
 _config_fw_env() {
 	log_default_config "Creating $FW_ENV_CONFIG_PATH"
 
@@ -35,6 +57,8 @@ _config_fw_env() {
 
 default_config() {
 	. /lib/functions/bos-defaults.sh
+
+	_config_miner_hwid
 
 	# generate only if 'fw_env.config' does not exist
 	[ -e "$FW_ENV_CONFIG_PATH" ] || _config_fw_env
