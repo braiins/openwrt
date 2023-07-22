@@ -6,6 +6,34 @@ log_default_config() {
     echo "default-config: $1" > /dev/kmsg
 }
 
+_config_bos_mode() {
+	local bos_mode_old=$(cat "$BOS_MODE_PATH" 2>/dev/null)
+	local bos_mode_new=""
+
+	case "$BOARD_NAME" in
+	$BRAIINS_BOARD_stm32mp157c_ii1_am2)
+		local boot_instance=$(
+			sed -n "s/root=\/dev\/mmcblk\(.*\)p. .*/\1/pg" /proc/cmdline
+		)
+		case "$boot_instance" in
+			0) bos_mode_new="emmc";;
+			1) bos_mode_new="sd";;
+		esac
+	  ;;
+	esac
+
+	if [ -z "$bos_mode_new" ]; then
+		log_default_config "bos_mode: Unexpected root device!"
+		rm -f "$BOS_MODE_PATH"
+	elif [ "$bos_mode_old" != "$bos_mode_new" ]; then
+		log_default_config "bos_mode: Updating mode to '$bos_mode_new'"
+		mkdir -p "$(dirname '$BOS_MODE_PATH')"
+		echo "$bos_mode_new" > "$BOS_MODE_PATH"
+	fi
+
+	return 0
+}
+
 _config_miner_hwid() {
 	local miner_hwid=$(
 		dd if="$NVMEM_PATH" bs=$NVMEM_WORD_SIZE \
@@ -74,6 +102,7 @@ _config_fw_env() {
 default_config() {
 	. /lib/functions/bos-defaults.sh
 
+	_config_bos_mode
 	_config_miner_hwid
 	_config_bos_platform
 
