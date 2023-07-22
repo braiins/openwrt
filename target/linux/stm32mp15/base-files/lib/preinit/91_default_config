@@ -28,6 +28,22 @@ _config_miner_hwid() {
 	return 0
 }
 
+_config_bos_platform() {
+	local bos_platform_old=$(cat "$BOS_PLATFORM_PATH" 2>/dev/null)
+	local bos_platform_new=${BOARD_NAME#*,}
+
+	if [ -z "$bos_platform_new" ]; then
+		log_default_config "bos_platform: Cannot parse board name!"
+		rm -f "$BOS_PLATFORM_PATH"
+	elif [ "$bos_platform_old" != "$bos_platform_new" ]; then
+		log_default_config "bos_platform: Updating name to '$bos_platform_new'"
+		mkdir -p "$(dirname '$BOS_PLATFORM_PATH')"
+		echo "$bos_platform_new" > "$BOS_PLATFORM_PATH"
+	fi
+
+	return 0
+}
+
 _config_fw_env() {
 	log_default_config "Creating $FW_ENV_CONFIG_PATH"
 
@@ -59,6 +75,7 @@ default_config() {
 	. /lib/functions/bos-defaults.sh
 
 	_config_miner_hwid
+	_config_bos_platform
 
 	# generate only if 'fw_env.config' does not exist
 	[ -e "$FW_ENV_CONFIG_PATH" ] || _config_fw_env
