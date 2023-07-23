@@ -1,0 +1,6 @@
+partitions=uuid_disk=${uuid_gpt_disk};name=fip,start=1MiB,size=15MiB,uuid=${uuid_gpt_emmc_fip};name=rootfs1,size=160MiB,uuid=${uuid_gpt_emmc_rootfs1};name=rootfs2,size=160MiB,uuid=${uuid_gpt_emmc_rootfs2};name=nvdata,size=-,uuid=${uuid_gpt_emmc_nvdata}
+emmc_erase_blk=0x00004000
+emmc_erase_cnt=0x000a4000
+emmc_factory_rootfs_hwpart=4
+emmc_factory_rootfs_blk=0x00000000
+emmc_factory_rootfs_cnt=0x00014000

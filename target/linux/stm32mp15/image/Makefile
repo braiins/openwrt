@@ -73,6 +73,11 @@ define Build/append-fip-gz
 	dd if=$(FIP_GZ_PATH) >> $@
 endef
 
+define Build/append-factory-env
+	$(STAGING_DIR_HOST)/bin/mkenvimage -r -p 0 -s $(FACTORY_ENV_SIZE) -o - \
+		factory-env_$(1).txt >> $@
+endef
+
 define Device/Default
   KERNEL := kernel-bin
   TFA_GZ_PATH = $(STAGING_DIR_IMAGE)/$$(TARGET_NAME)-tf-a.stm32.gz
@@ -80,8 +85,10 @@ define Device/Default
   UBOOT_PATH = $(STAGING_DIR_IMAGE)/$$(TARGET_NAME)-u-boot-nodtb.bin
   BOARD_NAME = $$(SUBTARGET)-$$(DEVICE_NAME)
   SUPPORTED_DEVICES = $(SUBTARGET_COMPATIBLES)
-  BOOT_TFA_SIZE := 1024k
-  BOOT_FIP_SIZE := 2048k
+  FACTORY_ENV_SIZE := 0x8000
+  BOOT_FIP_OFFSET := 1024k
+  BOOT_FACTORY_ENV_OFFSET := 3072k
+  BOOT_RESERVED_OFFSET := 3584k
   MMC_BLOCK_SIZE := 512
   IMAGES :=
   ARTIFACTS :=
@@ -106,8 +113,9 @@ define Device/emmc
   IMAGE/sysupgrade.tar := stm32mp15-sysupgrade-tar | append-metadata
   IMAGE/mmcblk0gp0.img := append-rootfs | pad-to $$$$(MMC_BLOCK_SIZE)
   ARTIFACT/mmcblk0bootx.img.gz := \
-	append-tf-a | pad-to $$$$(BOOT_TFA_SIZE) | \
-	append-fip-gz | pad-to $$$$(BOOT_FIP_SIZE) | \
+	append-tf-a | pad-to $$$$(BOOT_FIP_OFFSET) | \
+	append-fip-gz | pad-to $$$$(BOOT_FACTORY_ENV_OFFSET) | \
+	append-factory-env $(1) | pad-to $$$$(BOOT_RESERVED_OFFSET) | \
 	gzip
   ARTIFACT/mmcblk0.img.gz := stm32mp15-mmcblk0 | gzip
 endef
