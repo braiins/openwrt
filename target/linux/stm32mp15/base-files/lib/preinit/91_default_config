@@ -7,10 +7,10 @@ log_default_config() {
 }
 
 _config_bos_mode() {
-	local bos_mode_old=$(cat "$BOS_MODE_PATH" 2>/dev/null)
+	local bos_mode_old=$(bos_mode)
 	local bos_mode_new=""
 
-	case "$BOARD_NAME" in
+	case "$(board_name)" in
 	$BRAIINS_BOARD_stm32mp157c_ii1_am2)
 		local boot_instance=$(
 			sed -n "s/root=\/dev\/mmcblk\(.*\)p. .*/\1/pg" /proc/cmdline
@@ -57,8 +57,9 @@ _config_miner_hwid() {
 }
 
 _config_bos_platform() {
+	local board_name=$(board_name)
 	local bos_platform_old=$(cat "$BOS_PLATFORM_PATH" 2>/dev/null)
-	local bos_platform_new=${BOARD_NAME#*,}
+	local bos_platform_new=${board_name#*,}
 
 	if [ -z "$bos_platform_new" ]; then
 		log_default_config "bos_platform: Cannot parse board name!"
