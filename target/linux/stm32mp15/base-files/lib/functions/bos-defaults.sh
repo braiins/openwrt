@@ -1,5 +1,6 @@
 #!/bin/sh
 
+BOS_BUILD_PATH="/etc/bos_build"
 BOS_MAJOR_PATH="/etc/bos_major"
 BOS_MODE_PATH="/etc/bos_mode"
 BOS_PLATFORM_PATH="/etc/bos_platform"
@@ -13,6 +14,11 @@ PART_NAME_FIP="fip"
 
 NVMEM_WORD_SIZE=4
 NVMEM_OTP_MINER_HWID=63
+
+bos_build() {
+	cat "$BOS_BUILD_PATH" 2>/dev/null
+	return 0
+}
 
 bos_major() {
 	cat "$BOS_MAJOR_PATH" 2>/dev/null
