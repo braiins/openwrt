@@ -44,3 +44,9 @@ miner_hwid() {
 	cat "$MINER_HWID_PATH" 2>/dev/null
 	return 0
 }
+
+board_iface() {
+	local bos_platform=$(bos_platform)
+	echo ${bos_platform##*-}
+	return 0
+}

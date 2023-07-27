@@ -4,6 +4,7 @@
 
 include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/image.mk
+include $(INCLUDE_DIR)/bos-version.mk
 
 # format version of sysupgrade image
 # it is possible to upgrade firmware only with supported formats
@@ -18,15 +19,21 @@ TARGET_NAME = $(SUBTARGET)-$(BOARD_IFACE)_$(DEVICE_NAME)
 
 define Build/stm32mp15-sysupgrade-tar
 	rm -rf $@.tmp
-	mkdir -p $@.tmp/sysupgrade-$(BOARD_NAME)
+	mkdir -p $@.tmp/sysupgrade-$(BUILD_NAME)
 
-	echo "BOARD=$(BOARD_NAME)" > $@.tmp/sysupgrade-$(BOARD_NAME)/CONTROL
-	gzip -dc $(TFA_GZ_PATH) > $@.tmp/sysupgrade-$(BOARD_NAME)/tf-a.stm32
-	gzip -dc $(FIP_GZ_PATH) > $@.tmp/sysupgrade-$(BOARD_NAME)/fip.bin
-	ln -s $(IMAGE_ROOTFS) $@.tmp/sysupgrade-$(BOARD_NAME)/rootfs.img
+	echo "BOARD=$(BUILD_NAME)" > $@.tmp/sysupgrade-$(BUILD_NAME)/CONTROL
+	$(CP) COMMAND.ver $@.tmp/sysupgrade-$(BUILD_NAME)/COMMAND
+	$(BOS_VERSION_SED_SCRIPT) $@.tmp/sysupgrade-$(BUILD_NAME)/COMMAND
+	cat COMMAND >> $@.tmp/sysupgrade-$(BUILD_NAME)/COMMAND
+
+	gzip -dc $(TFA_GZ_PATH) \
+		> $@.tmp/sysupgrade-$(BUILD_NAME)/tf-a_$(BOARD_IFACE).stm32
+	gzip -dc $(FIP_GZ_PATH) \
+		> $@.tmp/sysupgrade-$(BUILD_NAME)/fip_$(BOARD_IFACE).bin
+	ln -s $(IMAGE_ROOTFS) $@.tmp/sysupgrade-$(BUILD_NAME)/rootfs.img
 
 	tar -C $@.tmp --sort=name --owner=0 --group=0 --numeric-owner -cvhf $@ \
-		sysupgrade-$(BOARD_NAME)
+		sysupgrade-$(BUILD_NAME)
 
 	rm -rf $@.tmp
 endef
@@ -83,7 +90,7 @@ define Device/Default
   TFA_GZ_PATH = $(STAGING_DIR_IMAGE)/$$(TARGET_NAME)-tf-a.stm32.gz
   FIP_GZ_PATH = $(STAGING_DIR_IMAGE)/$$(TARGET_NAME)-fip.bin.gz
   UBOOT_PATH = $(STAGING_DIR_IMAGE)/$$(TARGET_NAME)-u-boot-nodtb.bin
-  BOARD_NAME = $$(SUBTARGET)-$$(DEVICE_NAME)
+  BUILD_NAME = $$(BOARD)_$$(SUBTARGET)-$$(DEVICE_NAME)
   SUPPORTED_DEVICES = $(SUBTARGET_COMPATIBLES)
   FACTORY_ENV_SIZE := 0x8000
   BOOT_FIP_OFFSET := 1024k
