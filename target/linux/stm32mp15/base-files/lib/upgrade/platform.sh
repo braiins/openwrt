@@ -132,20 +132,36 @@ platform_pre_upgrade() {
 platform_do_upgrade() {
 	. /lib/functions/bos-defaults.sh
 
-	source_sysupgrade_command "$@" || return 1
+	export PLATFORM_DO_UPGRADE_RESULT="err"
+
+	source_sysupgrade_command "$@" || return
 	flush_all
 	if ! call_sysupgrade_command "package_do_upgrade" "$@"; then
 		v "package_do_upgrade: FAILED"
+		return
 	fi
-	flush_all
+	[ -n "$UPGRADE_BACKUP" ] || platform_finish_upgrade
+
+	export PLATFORM_DO_UPGRADE_RESULT="ok"
 }
 
 platform_copy_config() {
 	. /lib/functions/bos-defaults.sh
 
+	[ "$PLATFORM_DO_UPGRADE_RESULT" == "ok" ] || return
+
 	flush_all
 	if ! call_sysupgrade_command "package_copy_config"; then
 		v "package_copy_config: FAILED"
+	fi
+
+	platform_finish_upgrade
+}
+
+platform_finish_upgrade() {
+	flush_all
+	if ! call_sysupgrade_command "package_finish_upgrade"; then
+		v "package_finish_upgrade: FAILED"
 	fi
 	flush_all
 }
