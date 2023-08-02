@@ -1,5 +1,10 @@
 REQUIRE_IMAGE_METADATA=1
 
+flush_all() {
+	sync
+	echo 3 > /proc/sys/vm/drop_caches
+}
+
 sysupgrade_dir() {
 	echo "sysupgrade-$(bos_build)-$(bos_mode)"
 	return 0
@@ -128,15 +133,19 @@ platform_do_upgrade() {
 	. /lib/functions/bos-defaults.sh
 
 	source_sysupgrade_command "$@" || return 1
+	flush_all
 	if ! call_sysupgrade_command "package_do_upgrade" "$@"; then
 		v "package_do_upgrade: FAILED"
 	fi
+	flush_all
 }
 
 platform_copy_config() {
 	. /lib/functions/bos-defaults.sh
 
+	flush_all
 	if ! call_sysupgrade_command "package_copy_config"; then
 		v "package_copy_config: FAILED"
 	fi
+	flush_all
 }
