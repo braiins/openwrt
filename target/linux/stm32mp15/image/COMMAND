@@ -1,3 +1,133 @@
+FS_STATE_READY=2
+OVERLAY_PATH="/tmp/overlay"
+
+get_next_rootfs_index() {
+	local curr_index
+
+	curr_index=$(fw_printenv -n rootfs_index 2>/dev/null)
+	case "$curr_index" in
+		"") ;;
+		1) echo 2;;
+		2) echo 1;;
+		*)
+			v "Unexpected rootfs index '$curr_index'"
+			return 1
+		  ;;
+	esac
+
+	return 0
+}
+
+find_rootfs_dev() {
+	local next_rootfs_index=$1
+	local rootfs_label rootfs_dev
+
+	export_bootdevice && export_partdevice diskdev 0 || {
+		v "Unable to determine upgrade device"
+		return 1
+	}
+
+	rootfs_label="rootfs${next_rootfs_index}"
+	rootfs_dev=$(blkid \
+		--match-token PARTLABEL="$rootfs_label" \
+		--output device /dev/${diskdev}p*
+	)
+	[ -n "$rootfs_dev" ] || {
+		v "Unable to find partition '$rootfs_label'"
+		return 1
+	}
+
+	echo "$rootfs_dev"
+
+	return 0
+}
+
+package_check_image() {
+	local next_rootfs_index
+
+	next_rootfs_index=$(get_next_rootfs_index)
+	[ $? -ne 0 ] && return 1
+	find_rootfs_dev $next_rootfs_index >/dev/null || return 1
+
+	return 0
+}
+
+package_pre_upgrade() {
+	export RAMFS_COPY_BIN="$RAMFS_COPY_BIN blkid"
+	export RAMFS_COPY_BIN="$RAMFS_COPY_BIN ln"
+	export RAMFS_COPY_BIN="$RAMFS_COPY_BIN mkfs.f2fs"
+
+	return 0
+}
+
 package_do_upgrade() {
+	local block_size sysupgrade_dir
+	local next_rootfs_index rootfs_dev rootfs_path rootfs_length
+	local erase_offset overlay_offset
+
+	block_size=4194304
+	sysupgrade_dir=$(sysupgrade_dir)
+
+	next_rootfs_index=$(get_next_rootfs_index)
+	[ $? -ne 0 ] && return 1
+	rootfs_dev=$(find_rootfs_dev $next_rootfs_index)
+	[ $? -ne 0 ] && return 1
+
+	rootfs_path="$(sysupgrade_dir)/rootfs.img"
+	rootfs_length=$(
+		(get_image "$@" | tar xf - $rootfs_path -O | wc -c) 2>/dev/null
+	)
+	[ $? -ne 0 ] && return 1
+
+	erase_offset=$(( rootfs_length / block_size ))
+	overlay_offset=$(( (rootfs_length + 65535) / 65536 * 65536 ))
+
+	v "Erasing device '$rootfs_dev'..."
+	# Do not erase the whole device to speed it up
+	dd if=/dev/zero of=$rootfs_dev bs=$block_size seek=$erase_offset count=2
+
+	v "Flashing device '$rootfs_dev'..."
+	get_image "$@" \
+	| tar xf - "$rootfs_path" -O \
+	| dd of=$rootfs_dev bs=$block_size
+	sync
+
+	v "Creating read-write overlay (offset=$overlay_offset)..."
+	export OVERLAY_DEV=$(
+		losetup --find --show --offset $overlay_offset $rootfs_dev
+	)
+	mkfs.f2fs -q -l rootfs_data $OVERLAY_DEV
+
+	mkdir -p "$OVERLAY_PATH"
+	mount $OVERLAY_DEV "$OVERLAY_PATH"
+
+	# The index is switched at the end of the whole upgrade process
+	export ROOTFS_INDEX="$next_rootfs_index"
+
+	return 0
+}
+
+package_copy_config() {
+	v "Restoring config files..."
+
+	mv "$UPGRADE_BACKUP" "$OVERLAY_PATH/$BACKUP_FILE"
+
+	return 0
+}
+
+package_finish_upgrade() {
+	# Mark it ready to avoid "mount_root" wiping it again
+	ln -s $FS_STATE_READY "$OVERLAY_PATH/.fs_state"
+
+	v "Freeing up resources..."
+	sync
+	umount "$OVERLAY_PATH"
+	losetup -d $OVERLAY_DEV
+
+	[ -n "$ROOTFS_INDEX" ] && {
+		v "Switching rootfs to $ROOTFS_INDEX"
+		fw_setenv rootfs_index $ROOTFS_INDEX
+	}
+
 	return 0
 }
