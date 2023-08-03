@@ -1,10 +1,5 @@
 REQUIRE_IMAGE_METADATA=1
 
-flush_all() {
-	sync
-	echo 3 > /proc/sys/vm/drop_caches
-}
-
 sysupgrade_dir() {
 	echo "sysupgrade-$(bos_build)-$(bos_mode)"
 	return 0
@@ -114,6 +109,10 @@ platform_check_image() {
 }
 
 platform_pre_upgrade() {
+	# Wait for some time after 'echo 3 > /proc/sys/vm/drop_caches'
+	sleep 1
+	sync
+
 	. /lib/functions/bos-defaults.sh
 
 	# Preserve BOS essential files in ramfs
@@ -146,12 +145,12 @@ platform_switch_to_ramfs_required() {
 }
 
 platform_do_upgrade() {
+	sync
 	. /lib/functions/bos-defaults.sh
 
 	export PLATFORM_DO_UPGRADE_RESULT="err"
 
 	source_sysupgrade_command "$@" || return
-	flush_all
 	if ! call_sysupgrade_command "package_do_upgrade" "$@"; then
 		v "package_do_upgrade: FAILED"
 		return
@@ -162,11 +161,11 @@ platform_do_upgrade() {
 }
 
 platform_copy_config() {
+	sync
 	. /lib/functions/bos-defaults.sh
 
 	[ "$PLATFORM_DO_UPGRADE_RESULT" == "ok" ] || return
 
-	flush_all
 	if ! call_sysupgrade_command "package_copy_config"; then
 		v "package_copy_config: FAILED"
 	fi
@@ -175,9 +174,11 @@ platform_copy_config() {
 }
 
 platform_finish_upgrade() {
-	flush_all
+	sync
 	if ! call_sysupgrade_command "package_finish_upgrade"; then
 		v "package_finish_upgrade: FAILED"
 	fi
-	flush_all
+	sync
+	# Wait for some time to get more time for synchronization
+	sleep 1
 }
