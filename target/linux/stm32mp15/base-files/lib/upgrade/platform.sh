@@ -129,6 +129,22 @@ platform_pre_upgrade() {
 	fi
 }
 
+platform_switch_to_ramfs_required() {
+	. /lib/functions/bos-defaults.sh
+
+	source_sysupgrade_command "$@" || {
+		echo "yes"
+		return 1
+	}
+	if has_command "package_switch_to_ramfs_required"; then
+		package_switch_to_ramfs_required "$@"
+	else
+		echo "yes"
+	fi
+
+	return 0
+}
+
 platform_do_upgrade() {
 	. /lib/functions/bos-defaults.sh
 

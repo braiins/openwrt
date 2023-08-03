@@ -60,6 +60,22 @@ package_pre_upgrade() {
 	return 0
 }
 
+package_switch_to_ramfs_required() {
+	local next_rootfs_index
+
+	next_rootfs_index=$(get_next_rootfs_index)
+
+	if [ -n "$next_rootfs_index" ]; then
+		# Flashing another rootfs device does not require switch to RAMFS
+		# The device is not mounted and it is save to overwrite it
+		echo "no"
+	else
+		echo "yes"
+	fi
+
+	return 0
+}
+
 package_do_upgrade() {
 	local block_size sysupgrade_dir
 	local next_rootfs_index rootfs_dev rootfs_path rootfs_length
