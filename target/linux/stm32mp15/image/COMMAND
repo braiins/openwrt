@@ -54,6 +54,7 @@ package_check_image() {
 
 package_pre_upgrade() {
 	export RAMFS_COPY_BIN="$RAMFS_COPY_BIN blkid"
+	export RAMFS_COPY_BIN="$RAMFS_COPY_BIN dmesg"
 	export RAMFS_COPY_BIN="$RAMFS_COPY_BIN ln"
 	export RAMFS_COPY_BIN="$RAMFS_COPY_BIN mkfs.f2fs"
 
@@ -77,6 +78,10 @@ package_switch_to_ramfs_required() {
 }
 
 package_do_upgrade() {
+	# Redirect STDOUT and STDERR to /dev/kmsg
+	exec 1<&- 2<&- 1>/dev/kmsg 2>&1
+	echo "upgrade: - start -"
+
 	local block_size sysupgrade_dir
 	local next_rootfs_index rootfs_dev rootfs_path rootfs_length
 	local erase_offset overlay_offset
@@ -138,6 +143,11 @@ package_copy_config() {
 package_finish_upgrade() {
 	# Mark it ready to avoid "mount_root" wiping it again
 	ln -s $FS_STATE_READY "$OVERLAY_PATH/.fs_state"
+
+	v "Saving log..."
+	sync
+	echo "upgrade: - end -"
+	dmesg > "$OVERLAY_PATH/.sysupgrade.log"
 
 	v "Freeing up resources..."
 	sync
