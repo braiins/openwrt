@@ -132,6 +132,18 @@ kill_remaining() { # [ <signal> [ <loop> ] ]
 	done
 }
 
+switch_to_ramfs_required() {
+	if [ -n "$IMAGE" ] && type 'platform_switch_to_ramfs_required' >/dev/null 2>/dev/null; then
+		test "$(platform_switch_to_ramfs_required "$IMAGE")" = "yes"
+		ret=$?
+	else
+		test -n "$(rootfs_type)"
+		ret=$?
+	fi
+
+	return $ret
+}
+
 indicate_upgrade
 
 while read -r a b c; do
@@ -166,7 +178,7 @@ if [ -n "$IMAGE" ] && type 'platform_pre_upgrade' >/dev/null 2>/dev/null; then
 	platform_pre_upgrade "$IMAGE"
 fi
 
-if [ -n "$(rootfs_type)" ]; then
+if switch_to_ramfs_required; then
 	v "Switching to ramdisk..."
 	switch_to_ramfs
 fi
