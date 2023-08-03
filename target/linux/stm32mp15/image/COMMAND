@@ -65,7 +65,7 @@ package_do_upgrade() {
 	local next_rootfs_index rootfs_dev rootfs_path rootfs_length
 	local erase_offset overlay_offset
 
-	block_size=4194304
+	block_size=4096
 	sysupgrade_dir=$(sysupgrade_dir)
 
 	next_rootfs_index=$(get_next_rootfs_index)
@@ -75,21 +75,25 @@ package_do_upgrade() {
 
 	rootfs_path="$(sysupgrade_dir)/rootfs.img"
 	rootfs_length=$(
-		(get_image "$@" | tar xf - $rootfs_path -O | wc -c) 2>/dev/null
+		(get_image "$@" | tar xf - "$rootfs_path" -O | wc -c) 2>/dev/null
 	)
 	[ $? -ne 0 ] && return 1
 
 	erase_offset=$(( rootfs_length / block_size ))
+	erase_count=$(( 8388608 / block_size ))
+
 	overlay_offset=$(( (rootfs_length + 65535) / 65536 * 65536 ))
 
 	v "Erasing device '$rootfs_dev'..."
 	# Do not erase the whole device to speed it up
-	dd if=/dev/zero of=$rootfs_dev bs=$block_size seek=$erase_offset count=2
+	dd if=/dev/zero of=$rootfs_dev bs=$block_size seek=$erase_offset \
+		count=$erase_count conv=fsync
+	sync
 
 	v "Flashing device '$rootfs_dev'..."
 	get_image "$@" \
 	| tar xf - "$rootfs_path" -O \
-	| dd of=$rootfs_dev bs=$block_size
+	| dd of=$rootfs_dev bs=$block_size conv=fsync
 	sync
 
 	v "Creating read-write overlay (offset=$overlay_offset)..."
