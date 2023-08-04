@@ -1,6 +1,39 @@
 FS_STATE_READY=2
 OVERLAY_PATH="/tmp/overlay"
 
+check_fw_version() {
+	echo "Gathering current firmware information..."
+
+	local board_name=$(board_name)
+	local fw_major=$(bos_major)
+	local fw_version=$(bos_version)
+
+	echo "board  : $board_name"
+	echo "version: $fw_version"
+	echo "major  : $fw_major"
+
+	echo "Checking compatibility..."
+
+	if [ "$UPGRADE_FW_VERSION" ">" "$fw_version" ]; then
+		# Firmware upgrade
+		if [ "$UPGRADE_FW_REQUIRE" ">" "$fw_version" ]; then
+			echo "Firmware upgrade to '$UPGRADE_FW_VERSION' is not possible!"
+			echo "Firmware version '$UPGRADE_FW_REQUIRE' is required before upgrading to this version."
+			return 1
+		fi
+	elif [ "$UPGRADE_FW_VERSION" "<" "$fw_version" ]; then
+		# Firmware downgrade
+		if [ "$UPGRADE_FW_MAJOR" != "$fw_major" ]; then
+			echo "Firmware downgrade to '$UPGRADE_FW_VERSION' is not possible!"
+			echo "Downgrade is only possible among firmwares with major version '$UPGRADE_FW_MAJOR'."
+			echo "Do the factory reset and try to upgrade to this version."
+			return 1
+		fi
+	fi
+
+	return 0
+}
+
 get_next_rootfs_index() {
 	local curr_index
 
@@ -44,6 +77,8 @@ find_rootfs_dev() {
 
 package_check_image() {
 	local next_rootfs_index
+
+	check_fw_version || return 1
 
 	next_rootfs_index=$(get_next_rootfs_index)
 	[ $? -ne 0 ] && return 1
