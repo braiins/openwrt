@@ -641,10 +641,12 @@ ucidef_set_ntpserver() {
 ucidef_set_log() {
 	local log_size="$1"
 	local log_file="$2"
+	local cronloglevel="$3"
 
 	json_select_object system
 		json_add_int log_size "$log_size"
 		[ -n "$log_file" ] && json_add_string log_file "$log_file"
+		[ -n "$cronloglevel" ] && json_add_string cronloglevel "$cronloglevel"
 	json_select ..
 }
 

@@ -3,7 +3,7 @@
 
 board_config_update
 
-ucidef_set_log 1024 "/var/log/syslog"
+ucidef_set_log 1024 "/var/log/syslog" 9
 
 board_config_flush
 

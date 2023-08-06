@@ -332,12 +332,15 @@ generate_static_system() {
 				uci -q set "system.@system[-1].compat_version=1.0"
 			fi
 
-			local log_size log_file
+			local log_size log_file cronloglevel
 			if json_get_var log_size log_size; then
 				uci -q set "system.@system[-1].log_size=$log_size"
 			fi
 			if json_get_var log_file log_file; then
 				uci -q set "system.@system[-1].log_file=$log_file"
+			fi
+			if json_get_var cronloglevel cronloglevel; then
+				uci -q set "system.@system[-1].cronloglevel=$cronloglevel"
 			fi
 
 			if json_is_a ntpserver array; then
