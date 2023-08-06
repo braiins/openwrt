@@ -1,8 +1,13 @@
 
 . /lib/functions/uci-defaults.sh
 
+macaddr="$(cat /sys/class/net/eth0/address)"
+minerid="$(echo $macaddr | sed 's/.*:\(.*\):\(.*\):\(.*\)/\1\2\3/')"
+hostname="miner-$minerid"
+
 board_config_update
 
+ucidef_set_hostname "$hostname"
 ucidef_set_log 1024 "/var/log/syslog" 9
 
 board_config_flush
