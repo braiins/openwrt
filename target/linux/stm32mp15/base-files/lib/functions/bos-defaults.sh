@@ -50,3 +50,7 @@ board_iface() {
 	echo ${bos_platform##*-}
 	return 0
 }
+
+get_env_config() {
+	fw_printenv -n $1 2>/dev/null || echo ""
+}
