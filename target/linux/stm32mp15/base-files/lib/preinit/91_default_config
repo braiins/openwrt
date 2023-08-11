@@ -74,11 +74,10 @@ _config_bos_platform() {
 }
 
 _config_fw_env() {
-	log_default_config "Creating $FW_ENV_CONFIG_PATH"
+	local fip_dev second_offset
 
-	local root_dev=$(sed "s/root=\(.*\)p. .*/\1/g" /proc/cmdline)
-	local fip_dev=$(blkid --match-token PARTLABEL="$PART_NAME_FIP" \
-			--output device ${root_dev}p*)
+	log_default_config "Creating $FW_ENV_CONFIG_PATH"
+	fip_dev=$(find_part_fip_dev)
 
 	if [ -z "$fip_dev" ]; then
 		log_default_config "Partition 'fip' cannot be found!"
@@ -93,8 +92,8 @@ _config_fw_env() {
 		# environment sector is assumed present.
 
 		# MMC device name   Device offset   Env. size
-		${fip_dev}      -0x4000         0x2000
-		${fip_dev}      -0x2000         0x2000
+		${fip_dev}      -${UBOOT_ENV_FULL_SIZE}         ${UBOOT_ENV_SIZE}
+		${fip_dev}      -${UBOOT_ENV_SIZE}         ${UBOOT_ENV_SIZE}
 	END
 
 	return 0

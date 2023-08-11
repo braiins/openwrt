@@ -12,6 +12,9 @@ BRAIINS_BOARD_stm32mp157c_ii1_am2="braiins,stm32mp157c-ii1-am2"
 
 PART_NAME_FIP="fip"
 
+UBOOT_ENV_SIZE=0x2000
+UBOOT_ENV_FULL_SIZE=0x4000
+
 NVMEM_WORD_SIZE=4
 NVMEM_OTP_MINER_HWID=63
 
@@ -53,4 +56,13 @@ board_iface() {
 
 get_env_config() {
 	fw_printenv -n $1 2>/dev/null || echo ""
+}
+
+find_part_fip_dev() {
+	local root_dev fip_dev
+
+	root_dev=$(sed "s/root=\(.*\)p. .*/\1/g" /proc/cmdline)
+	blkid \
+		--match-token PARTLABEL="$PART_NAME_FIP" \
+		--output device ${root_dev}p*
 }
