@@ -4,3 +4,4 @@ emmc_erase_cnt=0x000a4000
 emmc_factory_rootfs_hwpart=4
 emmc_factory_rootfs_blk=0x00000000
 emmc_factory_rootfs_cnt=0x00014000
+rootfs_index_count=2
