@@ -32,6 +32,9 @@ else
     USE_SOURCE_DIR:=$(call qstrip,$(CONFIG_EXTERNAL_ARM_TRUSTED_FIRMWARE_STM32MP15_TREE))
 endif
 
+# Define the SOURCE_DATE_EPOCH variable to capture the package's source date epoch.
+SOURCE_DATE_EPOCH := $(PACKAGE_SOURCE_DATE_EPOCH)
+
 include $(INCLUDE_DIR)/trusted-firmware-a.mk
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/kernel.mk
