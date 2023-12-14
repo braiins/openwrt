@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# Set printk_devkmsg to `on` to enable printing to /dev/kmsg
+echo on > /proc/sys/kernel/printk_devkmsg
