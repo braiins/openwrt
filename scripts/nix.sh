@@ -5,7 +5,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 function run {
-  nix-shell --pure --argstr run "$*" "$ROOT/env.nix"
+  nix-shell --pure --argstr run "$*" "$ROOT/env.nix" -A env
 }
 
 if [[ $# -eq 0 ]]; then
