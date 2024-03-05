@@ -47,6 +47,11 @@ let
     extraOutputsToInstall = [ "dev" ];
     runScript = "${run}";
     profile = ''
+      export SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
+      export NIX_SSL_CERT_FILE="$SSL_CERT_FILE"
+      export SYSTEM_CERTIFICATE_PATH="$SSL_CERT_FILE"
+      export GIT_SSL_CAINFO="$SSL_CERT_FILE"
+
       export hardeningDisable=all
     '';
   };
