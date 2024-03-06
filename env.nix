@@ -21,6 +21,7 @@ let
     profile = ''
       export hardeningDisable=all
     '' + (if run != null then ''
+      export PROMPT_COMMAND="echo -n '(OpenWrt) '"
       export SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
       export NIX_SSL_CERT_FILE="$SSL_CERT_FILE"
       export SYSTEM_CERTIFICATE_PATH="$SSL_CERT_FILE"
