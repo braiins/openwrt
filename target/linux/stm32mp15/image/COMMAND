@@ -52,6 +52,18 @@ mmc_erase() {
 	sync
 }
 
+mmc_flash() {
+	local dev=$1
+	local offset=${2:-0}
+
+	local flash_offset
+	flash_offset=$(( offset / BLOCK_SIZE ))
+
+	v "Flashing device '$dev'..."
+	dd of=$dev bs=$BLOCK_SIZE seek=$flash_offset conv=fsync
+	sync
+}
+
 get_next_rootfs_index() {
 	local curr_index
 
@@ -156,12 +168,9 @@ package_do_upgrade() {
 
 	# Do not erase the whole device to speed it up
 	mmc_erase $rootfs_dev $rootfs_length 8388608
-
-	v "Flashing device '$rootfs_dev'..."
 	get_image "$@" \
 	| tar xf - "$rootfs_path" -O \
-	| dd of=$rootfs_dev bs=$BLOCK_SIZE conv=fsync
-	sync
+	| mmc_flash $rootfs_dev
 
 	v "Creating read-write overlay (offset=$overlay_offset)..."
 	export OVERLAY_DEV=$(
