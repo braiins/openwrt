@@ -1,6 +1,8 @@
 FS_STATE_READY=2
 OVERLAY_PATH="/tmp/overlay"
 
+BLOCK_SIZE=4096
+
 check_fw_version() {
 	echo "Gathering current firmware information..."
 
@@ -32,6 +34,22 @@ check_fw_version() {
 	fi
 
 	return 0
+}
+
+mmc_erase() {
+	local dev=$1
+	local offset=$2
+	local length=$3
+
+	local erase_offset erase_count
+	erase_offset=$(( offset / BLOCK_SIZE ))
+	erase_count=$(( length / BLOCK_SIZE ))
+
+	v "Erasing device '$dev'..."
+	# Do not erase the whole device to speed it up
+	dd if=/dev/zero of=$dev bs=$BLOCK_SIZE seek=$erase_offset \
+		count=$erase_count conv=fsync
+	sync
 }
 
 get_next_rootfs_index() {
@@ -117,11 +135,10 @@ package_do_upgrade() {
 	exec 1<&- 2<&- 1>/dev/kmsg 2>&1
 	echo "upgrade: - start -"
 
-	local block_size sysupgrade_dir
+	local sysupgrade_dir
 	local next_rootfs_index rootfs_dev rootfs_path rootfs_length
-	local erase_offset overlay_offset
+	local overlay_offset
 
-	block_size=4096
 	sysupgrade_dir=$(sysupgrade_dir)
 
 	next_rootfs_index=$(get_next_rootfs_index)
@@ -135,21 +152,15 @@ package_do_upgrade() {
 	)
 	[ $? -ne 0 ] && return 1
 
-	erase_offset=$(( rootfs_length / block_size ))
-	erase_count=$(( 8388608 / block_size ))
-
 	overlay_offset=$(( (rootfs_length + 65535) / 65536 * 65536 ))
 
-	v "Erasing device '$rootfs_dev'..."
 	# Do not erase the whole device to speed it up
-	dd if=/dev/zero of=$rootfs_dev bs=$block_size seek=$erase_offset \
-		count=$erase_count conv=fsync
-	sync
+	mmc_erase $rootfs_dev $rootfs_length 8388608
 
 	v "Flashing device '$rootfs_dev'..."
 	get_image "$@" \
 	| tar xf - "$rootfs_path" -O \
-	| dd of=$rootfs_dev bs=$block_size conv=fsync
+	| dd of=$rootfs_dev bs=$BLOCK_SIZE conv=fsync
 	sync
 
 	v "Creating read-write overlay (offset=$overlay_offset)..."
