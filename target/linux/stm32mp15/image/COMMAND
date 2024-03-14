@@ -36,16 +36,47 @@ check_fw_version() {
 	return 0
 }
 
+mmc_block_offset() {
+	local offset=$1
+
+	echo $(( offset / BLOCK_SIZE ))
+}
+
+mmc_block_count() {
+	local length=$1
+
+	echo $(( (length + BLOCK_SIZE - 1) / BLOCK_SIZE ))
+}
+
+mmc_dump() {
+	local dev=$1
+	local offset=$2
+	local length=$3
+
+	local dump_offset dump_count
+	dump_offset=$(mmc_block_offset $offset)
+	dump_count=$(mmc_block_count $length)
+
+	dd if=$dev bs=$BLOCK_SIZE skip=$dump_offset count=$dump_count
+}
+
+mmc_unlock() {
+	local dev=$1
+
+	local force_path="/sys/class/block/$(basename $dev)/force_ro"
+	[ -f $force_path ] && echo 0 > "$force_path"
+}
+
 mmc_erase() {
 	local dev=$1
 	local offset=$2
 	local length=$3
 
 	local erase_offset erase_count
-	erase_offset=$(( offset / BLOCK_SIZE ))
-	erase_count=$(( length / BLOCK_SIZE ))
+	erase_offset=$(mmc_block_offset $offset)
+	erase_count=$(mmc_block_count $length)
 
-	v "Erasing device '$dev'..."
+	v "Erasing device $dev[$offset] (size=$length)..."
 	# Do not erase the whole device to speed it up
 	dd if=/dev/zero of=$dev bs=$BLOCK_SIZE seek=$erase_offset \
 		count=$erase_count conv=fsync
@@ -53,13 +84,14 @@ mmc_erase() {
 }
 
 mmc_flash() {
-	local dev=$1
-	local offset=${2:-0}
+	local name=$1
+	local dev=$2
+	local offset=${3:-0}
 
 	local flash_offset
-	flash_offset=$(( offset / BLOCK_SIZE ))
+	flash_offset=$(mmc_block_offset $offset)
 
-	v "Flashing device '$dev'..."
+	v "Flashing device $dev[$offset] with $name..."
 	dd of=$dev bs=$BLOCK_SIZE seek=$flash_offset conv=fsync
 	sync
 }
@@ -167,10 +199,10 @@ package_do_upgrade() {
 	overlay_offset=$(( (rootfs_length + 65535) / 65536 * 65536 ))
 
 	# Do not erase the whole device to speed it up
-	mmc_erase $rootfs_dev $rootfs_length 8388608
+	mmc_erase $rootfs_dev $rootfs_length 0x800000
 	get_image "$@" \
 	| tar xf - "$rootfs_path" -O \
-	| mmc_flash $rootfs_dev
+	| mmc_flash "rootfs" $rootfs_dev
 
 	v "Creating read-write overlay (offset=$overlay_offset)..."
 	export OVERLAY_DEV=$(
