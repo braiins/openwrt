@@ -106,6 +106,73 @@ image_length() {
 	return $?
 }
 
+bootloaders_upgrade() {
+	local sysupgrade_dir board_iface
+	local fsbl_path fsbl_length
+	local fip_path fip_length
+
+	sysupgrade_dir=$(sysupgrade_dir)
+	board_iface=$(board_iface)
+
+	fsbl_path="$sysupgrade_dir/tf-a_${board_iface}.stm32"
+	fsbl_length=$(image_length "$fsbl_path" "$@")
+	[ $? -ne 0 ] && return 1
+
+	fip_path="$sysupgrade_dir/fip_${board_iface}.bin"
+	fip_length=$(image_length "$fip_path" "$@")
+	[ $? -ne 0 ] && return 1
+
+	local fip_dev="$(find_part_fip_dev)"
+	local fip_dev_prev="$fip_dev"
+	local fsbl_dev="/dev/mmcblk0boot0"
+	local fsbl_dev_prev="$fip_dev"
+
+	local fsbl_dev_offset=0
+	local fsbl_dev_length=0x100000
+	local fip_dev_offset=0
+	local fip_dev_length=0x300000
+
+	local fsbl_dev_prev_offset=0x300000
+	local fsbl_dev_prev_length=0x100000
+	local fip_dev_prev_offset=0x400000
+	local fip_dev_prev_length=0x200000
+
+	local fsbl_dump="/tmp/fsbl.dump"
+	local fip_dump="/tmp/fip.dump"
+
+	mmc_dump $fsbl_dev $fsbl_dev_offset $fsbl_dev_length > "$fsbl_dump"
+	mmc_dump $fip_dev $fip_dev_offset $fip_dev_length > "$fip_dump"
+
+	# Backup previous FSBL (TF-A)
+	mmc_erase $fsbl_dev_prev $fsbl_dev_prev_offset $fsbl_dev_prev_length
+	gzip -c $fsbl_dump | \
+		mmc_flash "TF-A backup" $fsbl_dev_prev $fsbl_dev_prev_offset
+
+	# Backup previous FIP (U-Boot)
+	mmc_erase $fip_dev_prev $fip_dev_prev_offset $fip_dev_prev_length
+	gzip -c $fip_dump | \
+		mmc_flash "U-Boot backup" $fip_dev_prev $fip_dev_prev_offset
+
+	# Flash new FSBL (TF-A)
+	mmc_unlock $fsbl_dev
+	mmc_erase $fsbl_dev $fsbl_dev_offset $fsbl_dev_length
+	get_image "$@" \
+		| tar xf - "$fsbl_path" -O \
+		| mmc_flash "TF-A" $fsbl_dev
+
+	# Flash new FIP (U-Boot)
+	mmc_unlock $fip_dev
+	mmc_erase $fip_dev $fip_dev_offset $fip_dev_length
+	get_image "$@" \
+		| tar xf - "$fip_path" -O \
+		| mmc_flash "U-Boot" $fip_dev
+
+	# Update U-Boot env to the latest version and boot the system
+	echo "bootcmd=ii_resetenv && ii_saveenv && boot" >> "$ENV_SCRIPT_PATH"
+
+	return 0
+}
+
 get_next_rootfs_index() {
 	local curr_index
 
@@ -231,6 +298,10 @@ package_do_upgrade() {
 		echo "Switching rootfs to $next_rootfs_index" >> "$ENV_MESSAGE_PATH"
 		echo "rootfs_index=$next_rootfs_index" >> "$ENV_SCRIPT_PATH"
 	}
+
+	# The most critical part of upgrade is done at the end. When it is somehow
+	# interrupted it can lead to factory reset or brick
+	[ "$(bos_mode)" = "emmc" ] && bootloaders_upgrade "$@"
 
 	return 0
 }
