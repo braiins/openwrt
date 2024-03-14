@@ -175,6 +175,8 @@ package_switch_to_ramfs_required() {
 }
 
 package_do_upgrade() {
+	# Do not truncate kernel messages
+	echo on > /proc/sys/kernel/printk_devkmsg
 	# Redirect STDOUT and STDERR to /dev/kmsg
 	exec 1<&- 2<&- 1>/dev/kmsg 2>&1
 	echo "upgrade: - start -"
