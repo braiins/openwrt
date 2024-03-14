@@ -1,5 +1,7 @@
 FS_STATE_READY=2
 OVERLAY_PATH="/tmp/overlay"
+ENV_SCRIPT_PATH="/tmp/uboot.env"
+ENV_MESSAGE_PATH="/tmp/uboot.msg"
 
 BLOCK_SIZE=4096
 
@@ -185,6 +187,9 @@ package_do_upgrade() {
 	local next_rootfs_index rootfs_dev rootfs_path rootfs_length
 	local overlay_offset
 
+	# Ensure that the script does not exist
+	rm -f "$ENV_SCRIPT_PATH" "$ENV_MESSAGE_PATH"
+
 	sysupgrade_dir=$(sysupgrade_dir)
 
 	next_rootfs_index=$(get_next_rootfs_index)
@@ -216,7 +221,10 @@ package_do_upgrade() {
 	mount $OVERLAY_DEV "$OVERLAY_PATH"
 
 	# The index is switched at the end of the whole upgrade process
-	export ROOTFS_INDEX="$next_rootfs_index"
+	[ -n "$next_rootfs_index" ] && {
+		echo "Switching rootfs to $next_rootfs_index" >> "$ENV_MESSAGE_PATH"
+		echo "rootfs_index=$next_rootfs_index" >> "$ENV_SCRIPT_PATH"
+	}
 
 	return 0
 }
@@ -243,9 +251,14 @@ package_finish_upgrade() {
 	umount "$OVERLAY_PATH"
 	losetup -d $OVERLAY_DEV
 
-	[ -n "$ROOTFS_INDEX" ] && {
-		v "Switching rootfs to $ROOTFS_INDEX"
-		fw_setenv rootfs_index $ROOTFS_INDEX
+	# Print all messages and modify the U-Env script at once
+	[ -f "$ENV_MESSAGE_PATH" ] && {
+		while IFS= read -r line; do
+			v "$line"
+		done < "$ENV_MESSAGE_PATH"
+	}
+	[ -f "$ENV_SCRIPT_PATH" ] && {
+		fw_setenv --script "$ENV_SCRIPT_PATH"
 	}
 
 	return 0
