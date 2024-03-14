@@ -98,6 +98,14 @@ mmc_flash() {
 	sync
 }
 
+image_length() {
+	local image_path=$1
+	shift
+
+	(get_image "$@" | tar xf - "$image_path" -O | wc -c) 2>/dev/null
+	return $?
+}
+
 get_next_rootfs_index() {
 	local curr_index
 
@@ -197,10 +205,8 @@ package_do_upgrade() {
 	rootfs_dev=$(find_rootfs_dev $next_rootfs_index)
 	[ $? -ne 0 ] && return 1
 
-	rootfs_path="$(sysupgrade_dir)/rootfs.img"
-	rootfs_length=$(
-		(get_image "$@" | tar xf - "$rootfs_path" -O | wc -c) 2>/dev/null
-	)
+	rootfs_path="$sysupgrade_dir/rootfs.img"
+	rootfs_length=$(image_length "$rootfs_path" "$@")
 	[ $? -ne 0 ] && return 1
 
 	overlay_offset=$(( (rootfs_length + 65535) / 65536 * 65536 ))
