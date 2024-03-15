@@ -38,6 +38,12 @@ check_fw_version() {
 	return 0
 }
 
+file_size() {
+	local file_path=$1
+
+	du -b "$file_path" | cut -f1
+}
+
 mmc_block_offset() {
 	local offset=$1
 
@@ -98,6 +104,23 @@ mmc_flash() {
 	sync
 }
 
+mmc_image_cmp() {
+	local dump_path=$1
+	shift
+	local image_path=$1
+	shift
+
+	local dump_count
+	dump_length=$(file_size "$dump_path")
+
+	(get_image "$@" | \
+		tar xf - "$image_path" -O | \
+		cat - /dev/zero | \
+		head -c $dump_length | \
+		cmp -s "$dump_path") 2>/dev/null
+	return $?
+}
+
 image_length() {
 	local image_path=$1
 	shift
@@ -153,22 +176,29 @@ bootloaders_upgrade() {
 	gzip -c $fip_dump | \
 		mmc_flash "U-Boot backup" $fip_dev_prev $fip_dev_prev_offset
 
+	local o_update=false
 	# Flash new FSBL (TF-A)
-	mmc_unlock $fsbl_dev
-	mmc_erase $fsbl_dev $fsbl_dev_offset $fsbl_dev_length
-	get_image "$@" \
-		| tar xf - "$fsbl_path" -O \
-		| mmc_flash "TF-A" $fsbl_dev
-
+	! mmc_image_cmp "$fsbl_dump" "$fsbl_path" "$@" && {
+		mmc_unlock $fsbl_dev
+		mmc_erase $fsbl_dev $fsbl_dev_offset $fsbl_dev_length
+		get_image "$@" \
+			| tar xf - "$fsbl_path" -O \
+			| mmc_flash "TF-A" $fsbl_dev
+		o_update=true
+	}
 	# Flash new FIP (U-Boot)
-	mmc_unlock $fip_dev
-	mmc_erase $fip_dev $fip_dev_offset $fip_dev_length
-	get_image "$@" \
-		| tar xf - "$fip_path" -O \
-		| mmc_flash "U-Boot" $fip_dev
-
-	# Update U-Boot env to the latest version and boot the system
-	echo "bootcmd=ii_resetenv && ii_saveenv && boot" >> "$ENV_SCRIPT_PATH"
+	! mmc_image_cmp "$fip_dump" "$fip_path" "$@" && {
+		mmc_unlock $fip_dev
+		mmc_erase $fip_dev $fip_dev_offset $fip_dev_length
+		get_image "$@" \
+			| tar xf - "$fip_path" -O \
+			| mmc_flash "U-Boot" $fip_dev
+		o_update=true
+	}
+	$o_update && {
+		# Update U-Boot env to the latest version and boot the system
+		echo "bootcmd=ii_resetenv && ii_saveenv && boot" >> "$ENV_SCRIPT_PATH"
+	}
 
 	return 0
 }
