@@ -369,6 +369,8 @@ package_do_upgrade() {
 	[ -n "$next_rootfs_index" ] && {
 		echo "Switching rootfs to $next_rootfs_index" >> "$ENV_MESSAGE_PATH"
 		echo "rootfs_index=$next_rootfs_index" >> "$ENV_SCRIPT_PATH"
+		# Set auto-recovery for two failed attempts to start the system
+		echo "recovery_counter=2" >> "$ENV_SCRIPT_PATH"
 	}
 
 	# The most critical part of upgrade is done at the end. When it is somehow
