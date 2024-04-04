@@ -3,6 +3,7 @@
 BOS_BUILD_PATH="/etc/bos_build"
 BOS_MAJOR_PATH="/etc/bos_major"
 BOS_MODE_PATH="/etc/bos_mode"
+BOS_REVISION_PATH="/etc/bos_revision"
 BOS_PLATFORM_PATH="/etc/bos_platform"
 BOS_VERSION_PATH="/etc/bos_version"
 MINER_HWID_PATH="/tmp/miner_hwid"
@@ -48,6 +49,11 @@ bos_platform() {
 
 bos_version() {
 	cat "$BOS_VERSION_PATH" 2>/dev/null
+	return 0
+}
+
+bos_revision() {
+	cat "$BOS_REVISION_PATH" 2>/dev/null
 	return 0
 }
 

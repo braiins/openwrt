@@ -58,8 +58,11 @@ _config_miner_hwid() {
 
 _config_bos_platform() {
 	local board_name=$(board_name)
+	# Cut off leading "braiins," and trailing bos revision, such as "_p02_xx"
+	local board_name_tmp=${board_name#*,}
+	local bos_platform_new=${board_name_tmp%%_*}
+
 	local bos_platform_old=$(cat "$BOS_PLATFORM_PATH" 2>/dev/null)
-	local bos_platform_new=${board_name#*,}
 
 	if [ -z "$bos_platform_new" ]; then
 		log_default_config "bos_platform: Cannot parse board name!"
@@ -71,6 +74,21 @@ _config_bos_platform() {
 	fi
 
 	return 0
+}
+
+_config_bos_revision() {
+	local board_name=$(board_name)
+	local bos_revision=${board_name#*_}
+
+	# If board_name doesn't contain any suffix starting with '_' (e.g. '_p02'),
+	# the bos_revision variable will hold the same value as board_name.
+	if [ "$bos_revision" = "$board_name" ]; then
+		log_default_config "bos_revision: No revision found"
+		rm -f "$BOS_REVISION_PATH"
+	else
+		log_default_config "bos_revision: Setting bos_revision to '$bos_revision'"
+		echo "$bos_revision" > "$BOS_REVISION_PATH"
+	fi
 }
 
 _config_fw_env() {
@@ -105,6 +123,7 @@ default_config() {
 	_config_bos_mode
 	_config_miner_hwid
 	_config_bos_platform
+	_config_bos_revision
 
 	# generate only if 'fw_env.config' does not exist
 	[ -e "$FW_ENV_CONFIG_PATH" ] || _config_fw_env
