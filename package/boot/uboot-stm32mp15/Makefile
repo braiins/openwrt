@@ -38,30 +38,36 @@ include $(INCLUDE_DIR)/package.mk
 # Define the SOURCE_DATE_EPOCH variable to capture the package's source date epoch.
 SOURCE_DATE_EPOCH := $(PKG_SOURCE_DATE_EPOCH)
 
-DTB_VARIANT_NAME_ii1_am2:=stm32mp157c-ii1-am2$(call qstrip,$(CONFIG_DTB_VARIANT_stm32mp15_ii1))
-
 define U-Boot/Default
   BUILD_TARGET=stm32mp15
-  UBOOT_CONFIG=stm32mp15_$$(BUILD_SUBTARGET)_$$(BUILD_DEVICES)
+  BUILD_SUBTARGET:=ii1
 endef
 
-define U-Boot/ii1-am2_sd
-  NAME:=U-Boot $(PKG_VERSION) for Braiins Control Board (stm32mp157c-ii1-am2/SD)
-  BUILD_SUBTARGET:=ii1
+define U-Boot/ii1-am2_sd_template
+  NAME:=U-Boot $(PKG_VERSION) for Braiins Control Board ($(1)/SD)
   BUILD_DEVICES:=sd
-  DTB_FILE_NAME:=$(DTB_VARIANT_NAME_ii1_am2)
+  DTB_FILE_NAME:=$(1)
+  UBOOT_CONFIG=$(1)_sd
 endef
 
-define U-Boot/ii1-am2_emmc
-  NAME:=U-Boot $(PKG_VERSION) for Braiins Control Board (stm32mp157c-ii1-am2/eMMC)
-  BUILD_SUBTARGET:=ii1
+define U-Boot/ii1-am2_emmc_template
+  NAME:=U-Boot $(PKG_VERSION) for Braiins Control Board ($(1)/eMMC)
   BUILD_DEVICES:=emmc
-  DTB_FILE_NAME:=$(DTB_VARIANT_NAME_ii1_am2)
+  DTB_FILE_NAME:=$(1)
+  UBOOT_CONFIG=$(1)_emmc
 endef
+
+U-Boot/ii1-am2_sd=$(call U-Boot/ii1-am2_sd_template,stm32mp157c-ii1-am2)
+U-Boot/ii1-am2_emmc=$(call U-Boot/ii1-am2_emmc_template,stm32mp157c-ii1-am2)
+
+U-Boot/ii1-am2_p03_a12_sd=$(call U-Boot/ii1-am2_sd_template,stm32mp157c-ii1-am2_p03_a12)
+U-Boot/ii1-am2_p03_a12_emmc=$(call U-Boot/ii1-am2_emmc_template,stm32mp157c-ii1-am2_p03_a12)
 
 UBOOT_TARGETS := \
 	ii1-am2_sd \
-	ii1-am2_emmc
+	ii1-am2_emmc \
+	ii1-am2_p03_a12_sd \
+	ii1-am2_p03_a12_emmc
 
 UBOOT_MAKE_FLAGS += \
 	DEVICE_TREE=$(DTB_FILE_NAME)
