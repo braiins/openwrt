@@ -1,3 +1,0 @@
-config DTB_VARIANT_stm32mp15_ii1
-    string "Use DTB variant for STM32MP15"
-    default ""

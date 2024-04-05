@@ -29,8 +29,7 @@ include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/kernel.mk
 
 LINUX_BOOT_DIR:=$(LINUX_DIR)/arch/$(LINUX_KARCH)/boot
-DTB_DEFAULT_NAME_ii1_am2:=stm32mp157c-ii1-am2
-DTB_VARIANT_NAME_ii1_am2:=$(DTB_DEFAULT_NAME_ii1_am2)$(call qstrip,$(CONFIG_DTB_VARIANT_stm32mp15_ii1))
+DTB_VARIANT_NAME_ii1_am2:=stm32mp157c-ii1-am2 stm32mp157c-ii1-am2_p03_a12
 BOOT_SCR_NAME:=boot
 
 define Package/boot-stm32mp15_ii1
@@ -51,15 +50,13 @@ define Build/Compile
 		$(PKG_BUILD_DIR)/$(BOOT_SCR_NAME).scr
 endef
 
-define Package/boot-stm32mp15_ii1/config
-	source "$(SOURCE)/Config.in"
-endef
-
 define Package/boot-stm32mp15_ii1/install
 	$(INSTALL_DIR) $(1)/boot
 	$(INSTALL_DATA) $(LINUX_BOOT_DIR)/zImage $(1)/boot/
-	$(INSTALL_DATA) $(LINUX_BOOT_DIR)/dts/$(DTB_VARIANT_NAME_ii1_am2).dtb $(1)/boot/$(DTB_DEFAULT_NAME_ii1_am2).dtb
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/$(BOOT_SCR_NAME).scr $(1)/boot
+$(foreach dtb,$(DTB_VARIANT_NAME_ii1_am2),
+	$(INSTALL_DATA) $(LINUX_BOOT_DIR)/dts/$(dtb).dtb $(1)/boot/$(dtb).dtb
+)
 endef
 
 $(eval $(call BuildPackage,boot-stm32mp15_ii1))
