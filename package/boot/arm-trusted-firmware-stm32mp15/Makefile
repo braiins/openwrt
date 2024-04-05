@@ -39,34 +39,39 @@ include $(INCLUDE_DIR)/kernel.mk
 # Define the SOURCE_DATE_EPOCH variable to capture the package's source date epoch.
 SOURCE_DATE_EPOCH := $(PKG_SOURCE_DATE_EPOCH)
 
-DTB_VARIANT_NAME_ii1_am2:=stm32mp157c-ii1-am2$(call qstrip,$(CONFIG_DTB_VARIANT_stm32mp15_ii1))
-
 define Trusted-Firmware-A/Default
   BUILD_TARGET:=stm32mp15
   PLAT:=stm32mp1
   BOOT_DEVICE:=
   DEPENDS:=@LINUX_5_10 +u-boot-$(1)
+  BUILD_SUBTARGET:=ii1
 endef
 
-define Trusted-Firmware-A/ii1-am2_sd
+define Trusted-Firmware-A/ii1-am2_sd_template
   NAME:=TF-A $(PKG_VERSION) for Braiins Control Board (stm32mp157c-ii1-am2/SD)
-  BUILD_SUBTARGET:=ii1
   BUILD_DEVICES:=sd
   BOOT_DEVICE:=sd
-  DTB_FILE_NAME:=$(DTB_VARIANT_NAME_ii1_am2)
+  DTB_FILE_NAME:=$(1)
 endef
 
-define Trusted-Firmware-A/ii1-am2_emmc
+define Trusted-Firmware-A/ii1-am2_emmc_template
   NAME:=TF-A $(PKG_VERSION) for Braiins Control Board (stm32mp157c-ii1-am2/eMMC)
-  BUILD_SUBTARGET:=ii1
   BUILD_DEVICES:=emmc
   BOOT_DEVICE:=emmc
-  DTB_FILE_NAME:=$(DTB_VARIANT_NAME_ii1_am2)
+  DTB_FILE_NAME:=$(1)
 endef
+
+Trusted-Firmware-A/ii1-am2_sd=$(call Trusted-Firmware-A/ii1-am2_sd_template,stm32mp157c-ii1-am2)
+Trusted-Firmware-A/ii1-am2_emmc=$(call Trusted-Firmware-A/ii1-am2_emmc_template,stm32mp157c-ii1-am2)
+
+Trusted-Firmware-A/ii1-am2_p03_a12_sd=$(call Trusted-Firmware-A/ii1-am2_sd_template,stm32mp157c-ii1-am2_p03_a12)
+Trusted-Firmware-A/ii1-am2_p03_a12_emmc=$(call Trusted-Firmware-A/ii1-am2_emmc_template,stm32mp157c-ii1-am2_p03_a12)
 
 TFA_TARGETS:= \
 	ii1-am2_sd \
-	ii1-am2_emmc
+	ii1-am2_emmc \
+	ii1-am2_p03_a12_sd \
+	ii1-am2_p03_a12_emmc
 
 TFA_MAKE_FLAGS += \
 	BUILD_BASE=build-$(BUILD_VARIANT) \
