@@ -11,4 +11,5 @@ CPU_SUBTYPE:=neon-vfpv4
 BOARD_IFACE := am2
 
 SUBTARGET_COMPATIBLES := \
-	braiins,stm32mp157c-ii1-am2
+	braiins,stm32mp157c-ii1-am2 \
+	braiins,stm32mp157c-ii1-am2_p03_a12

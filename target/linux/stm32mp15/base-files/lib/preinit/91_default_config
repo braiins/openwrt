@@ -11,7 +11,8 @@ _config_bos_mode() {
 	local bos_mode_new=""
 
 	case "$(board_name)" in
-	$BRAIINS_BOARD_stm32mp157c_ii1_am2)
+	$BRAIINS_BOARD_stm32mp157c_ii1_am2|\
+	$BRAIINS_BOARD_stm32mp157c_ii1_am2_p03_a12)
 		local boot_instance=$(
 			sed -n "s/root=\/dev\/mmcblk\(.*\)p. .*/\1/pg" /proc/cmdline
 		)

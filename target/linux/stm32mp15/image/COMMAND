@@ -168,15 +168,23 @@ bootloaders_upgrade() {
 	local sysupgrade_dir board_iface
 	local fsbl_path fsbl_length
 	local fip_path fip_length
+	local board_name board_revision
 
 	sysupgrade_dir=$(sysupgrade_dir)
 	board_iface=$(board_iface)
+	board_name=$(board_name)
+	bos_revision=$(bos_revision)
+	bos_revision=${bos_revision:-"default"}
 
-	fsbl_path="$sysupgrade_dir/tf-a_${board_iface}.stm32"
+	fsbl_path="$sysupgrade_dir/tf-a_${board_iface}_${bos_revision}.stm32"
+	fip_path="$sysupgrade_dir/fip_${board_iface}_${bos_revision}.bin"
+
+	v "FIP Image: '$fip_path'"
+	v "FSBL Image: '$fsbl_path'"
+
 	fsbl_length=$(image_length "$fsbl_path" "$@")
 	[ $? -ne 0 ] && return 1
 
-	fip_path="$sysupgrade_dir/fip_${board_iface}.bin"
 	fip_length=$(image_length "$fip_path" "$@")
 	[ $? -ne 0 ] && return 1
 

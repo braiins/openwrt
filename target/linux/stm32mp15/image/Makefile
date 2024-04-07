@@ -17,6 +17,20 @@ KERNEL_LOADADDR := 0xC2000040
 
 TARGET_NAME = $(SUBTARGET)-$(BOARD_IFACE)_$(DEVICE_NAME)
 
+TFA_GZ_PATH_default = $(STAGING_DIR_IMAGE)/$(SUBTARGET)-$(BOARD_IFACE)_$(DEVICE_NAME)-tf-a.stm32.gz
+FIP_GZ_PATH_default = $(STAGING_DIR_IMAGE)/$(SUBTARGET)-$(BOARD_IFACE)_$(DEVICE_NAME)-fip.bin.gz
+
+TFA_GZ_PATH_p03_a12 = $(STAGING_DIR_IMAGE)/$(SUBTARGET)-$(BOARD_IFACE)_p03_a12_$(DEVICE_NAME)-tf-a.stm32.gz
+FIP_GZ_PATH_p03_a12 = $(STAGING_DIR_IMAGE)/$(SUBTARGET)-$(BOARD_IFACE)_p03_a12_$(DEVICE_NAME)-fip.bin.gz
+
+define copy-bootloaders
+	gzip -dc $(TFA_GZ_PATH_$(1)) \
+		> $@.tmp/sysupgrade-$(BUILD_NAME)/tf-a_$(BOARD_IFACE)_$(1).stm32
+
+	gzip -dc $(FIP_GZ_PATH_$(1)) \
+		> $@.tmp/sysupgrade-$(BUILD_NAME)/fip_$(BOARD_IFACE)_$(1).bin
+endef
+
 define Build/stm32mp15-sysupgrade-tar
 	rm -rf $@.tmp
 	mkdir -p $@.tmp/sysupgrade-$(BUILD_NAME)
@@ -26,10 +40,9 @@ define Build/stm32mp15-sysupgrade-tar
 	$(BOS_VERSION_SED_SCRIPT) $@.tmp/sysupgrade-$(BUILD_NAME)/COMMAND
 	cat COMMAND >> $@.tmp/sysupgrade-$(BUILD_NAME)/COMMAND
 
-	gzip -dc $(TFA_GZ_PATH) \
-		> $@.tmp/sysupgrade-$(BUILD_NAME)/tf-a_$(BOARD_IFACE).stm32
-	gzip -dc $(FIP_GZ_PATH) \
-		> $@.tmp/sysupgrade-$(BUILD_NAME)/fip_$(BOARD_IFACE).bin
+	$(call copy-bootloaders,default)
+	$(call copy-bootloaders,p03_a12)
+
 	ln -s $(IMAGE_ROOTFS) $@.tmp/sysupgrade-$(BUILD_NAME)/rootfs.img
 
 	tar -C $@.tmp --sort=name --owner=0 --group=0 --numeric-owner -cvhf $@ \
@@ -42,8 +55,8 @@ define Build/stm32mp15-sdcard
 	rm -rf $@.tmp
 	mkdir -p $@.tmp/data $@.tmp/tmp
 
-	gzip -dc $(TFA_GZ_PATH) > $@.tmp/data/tf-a.stm32
-	gzip -dc $(FIP_GZ_PATH) > $@.tmp/data/fip.bin
+	gzip -dc $(TFA_GZ_PATH_$(1)) > $@.tmp/data/tf-a.stm32
+	gzip -dc $(FIP_GZ_PATH_$(1)) > $@.tmp/data/fip.bin
 	ln -s $(IMAGE_ROOTFS) $@.tmp/data/rootfs.img
 
 	genimage \
@@ -60,7 +73,7 @@ define Build/stm32mp15-mmcblk0
 	rm -rf $@.tmp
 	mkdir -p $@.tmp/data $@.tmp/tmp
 
-	gzip -dc $(FIP_GZ_PATH) > $@.tmp/data/fip.bin
+	gzip -dc $(FIP_GZ_PATH_$(1)) > $@.tmp/data/fip.bin
 
 	genimage \
 		--tmppath $@.tmp/tmp \
@@ -73,11 +86,11 @@ define Build/stm32mp15-mmcblk0
 endef
 
 define Build/append-tf-a
-	gzip -dc $(TFA_GZ_PATH) >> $@
+	gzip -dc $(TFA_GZ_PATH_$(1)) >> $@
 endef
 
 define Build/append-fip-gz
-	dd if=$(FIP_GZ_PATH) >> $@
+	dd if=$(FIP_GZ_PATH_$(1)) >> $@
 endef
 
 define Build/append-factory-env
@@ -87,8 +100,6 @@ endef
 
 define Device/Default
   KERNEL := kernel-bin
-  TFA_GZ_PATH = $(STAGING_DIR_IMAGE)/$$(TARGET_NAME)-tf-a.stm32.gz
-  FIP_GZ_PATH = $(STAGING_DIR_IMAGE)/$$(TARGET_NAME)-fip.bin.gz
   UBOOT_PATH = $(STAGING_DIR_IMAGE)/$$(TARGET_NAME)-u-boot-nodtb.bin
   BUILD_NAME = $$(BOARD)_$$(SUBTARGET)-$$(DEVICE_NAME)
   SUPPORTED_DEVICES = $(SUBTARGET_COMPATIBLES)
@@ -104,10 +115,11 @@ endef
 define Device/sd
   DEVICE_TITLE := STM32MP15 SD Card Image
   FILESYSTEMS := squashfs
-  IMAGES := sysupgrade.tar user.img.gz
+  IMAGES := sysupgrade.tar user.img.gz user_p03_a12.img.gz
   IMAGE_METADATA := $(FORMAT_VERSION),$(BOS_MODE_SD)
   IMAGE/sysupgrade.tar := stm32mp15-sysupgrade-tar | append-metadata
-  IMAGE/user.img.gz := stm32mp15-sdcard | gzip
+  IMAGE/user.img.gz := stm32mp15-sdcard default | gzip
+  IMAGE/user_p03_a12.img.gz := stm32mp15-sdcard p03_a12 | gzip
 endef
 TARGET_DEVICES += sd
 
@@ -115,16 +127,22 @@ define Device/emmc
   DEVICE_TITLE := STM32MP15 eMMC Image
   FILESYSTEMS := squashfs
   IMAGES := sysupgrade.tar mmcblk0gp0.img
-  ARTIFACTS := mmcblk0bootx.img.gz mmcblk0.img.gz
+  ARTIFACTS := mmcblk0bootx.img.gz mmcblk0.img.gz mmcblk0bootx_p03_a12.img.gz mmcblk0_p03_a12.img.gz
   IMAGE_METADATA := $(FORMAT_VERSION),$(BOS_MODE_EMMC)
   IMAGE/sysupgrade.tar := stm32mp15-sysupgrade-tar | append-metadata
   IMAGE/mmcblk0gp0.img := append-rootfs | pad-to $$$$(MMC_BLOCK_SIZE)
   ARTIFACT/mmcblk0bootx.img.gz := \
-	append-tf-a | pad-to $$$$(BOOT_FIP_OFFSET) | \
-	append-fip-gz | pad-to $$$$(BOOT_FACTORY_ENV_OFFSET) | \
+	append-tf-a default | pad-to $$$$(BOOT_FIP_OFFSET) | \
+	append-fip-gz default | pad-to $$$$(BOOT_FACTORY_ENV_OFFSET) | \
 	append-factory-env $(1) | pad-to $$$$(BOOT_RESERVED_OFFSET) | \
 	gzip
-  ARTIFACT/mmcblk0.img.gz := stm32mp15-mmcblk0 | gzip
+  ARTIFACT/mmcblk0bootx_p03_a12.img.gz := \
+	append-tf-a p03_a12 | pad-to $$$$(BOOT_FIP_OFFSET) | \
+	append-fip-gz p03_a12 | pad-to $$$$(BOOT_FACTORY_ENV_OFFSET) | \
+	append-factory-env $(1) | pad-to $$$$(BOOT_RESERVED_OFFSET) | \
+	gzip
+  ARTIFACT/mmcblk0.img.gz := stm32mp15-mmcblk0 default | gzip
+  ARTIFACT/mmcblk0_p03_a12.img.gz := stm32mp15-mmcblk0 p03_a12 | gzip
 endef
 TARGET_DEVICES += emmc
 
