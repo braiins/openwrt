@@ -6,7 +6,7 @@ load mmc ${boot_instance}:${rootfs_part} $fdt_addr_r boot/$fdtfile || exit 1
 
 echo "Boot environment:"
 setenv kernel_rootfs "/dev/mmcblk${boot_instance}p${rootfs_part}"
-setenv bootargs "root=${kernel_rootfs} rootwait rw earlyprintk console=ttySTM0,115200"
+setenv bootargs "root=${kernel_rootfs} rootwait rw earlyprintk console=ttySTM0,115200 vt.global_cursor_default=0"
 printenv bootargs
 
 echo ""
