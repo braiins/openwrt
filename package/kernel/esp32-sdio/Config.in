@@ -1,0 +1,3 @@
+config EXTERNAL_ESP32_SDIO_TREE
+    string "Use external ESP32 SDIO tree" if DEVEL
+    default ""

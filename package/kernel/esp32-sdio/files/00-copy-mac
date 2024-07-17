@@ -1,0 +1,20 @@
+
+if [ "${ACTION}" == "add" ]; then
+	# The sleep must be here, otherwise it may happen that not all nodes in /sys
+	# are populated yet and this script fails.
+	sleep 1
+	VENDOR_ID=$(cat /sys/${DEVPATH}/device/vendor)
+	DEVICE_ID=$(cat /sys/${DEVPATH}/device/device)
+
+	# Upon a fresh insert of the esp32-sdio NG module, the MAC address is populated in the
+	# net but not the ieee80211 subsystem, that causes the MAC address to disappear during
+	# a reconfiguration event (e.g. connecting to a wifi) leading to crippling the whole
+	# thing since it cannot work with zeroed MAC address.
+	if [ "${VENDOR_ID}" = "0x0092" ] && [ "${DEVICE_ID}" == "0x6666" ]; then
+		INTF_NAME=$(ls /sys/${DEVPATH}/device/net/ | head -n1)
+		MAC=$(cat /sys/${DEVPATH}/device/net/${INTF_NAME}/address)
+		logger -t hotplug "Setting MAC ${MAC} for device ${DEVICENAME} (intf: ${INTF_NAME})"
+		echo ${MAC} > /sys/${DEVPATH}/macaddress
+	fi
+fi
+
