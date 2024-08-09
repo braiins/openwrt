@@ -1,4 +1,4 @@
-# Copyright (C) 2023  Braiins Systems s.r.o.
+# Copyright (C) 2024  Braiins Systems s.r.o.
 #
 # This file is part of Braiins Open-Source Initiative (BOSI).
 #
@@ -40,34 +40,41 @@ SOURCE_DATE_EPOCH := $(PKG_SOURCE_DATE_EPOCH)
 
 define U-Boot/Default
   BUILD_TARGET=stm32mp15
-  BUILD_SUBTARGET:=ii1
+  MPU_NAME=stm32mp157c
 endef
 
-define U-Boot/ii1-am2_sd_template
-  NAME:=U-Boot $(PKG_VERSION) for Braiins Control Board ($(1)/SD)
+define U-Boot/sd_template
+  NAME:=U-Boot $(PKG_VERSION) for Braiins Control Board ($(MPU_NAME)-$(1)-$(2)/SD)
+  BUILD_SUBTARGET:=$(1)
   BUILD_DEVICES:=sd
-  DTB_FILE_NAME:=$(1)
-  UBOOT_CONFIG=$(1)_sd
+  DTB_FILE_NAME:=$(MPU_NAME)-$(1)-$(2)
+  UBOOT_CONFIG=$(MPU_NAME)-$(1)-$(2)_sd
 endef
 
-define U-Boot/ii1-am2_emmc_template
-  NAME:=U-Boot $(PKG_VERSION) for Braiins Control Board ($(1)/eMMC)
+define U-Boot/emmc_template
+  NAME:=U-Boot $(PKG_VERSION) for Braiins Control Board ($(MPU_NAME)-$(1)-$(2)/eMMC)
+  BUILD_SUBTARGET:=$(1)
   BUILD_DEVICES:=emmc
-  DTB_FILE_NAME:=$(1)
-  UBOOT_CONFIG=$(1)_emmc
+  DTB_FILE_NAME:=$(MPU_NAME)-$(1)-$(2)
+  UBOOT_CONFIG=$(MPU_NAME)-$(1)-$(2)_emmc
 endef
 
-U-Boot/ii1-am2_sd=$(call U-Boot/ii1-am2_sd_template,stm32mp157c-ii1-am2)
-U-Boot/ii1-am2_emmc=$(call U-Boot/ii1-am2_emmc_template,stm32mp157c-ii1-am2)
+U-Boot/ii1-am2_sd=$(call U-Boot/sd_template,ii1,am2)
+U-Boot/ii1-am2_emmc=$(call U-Boot/emmc_template,ii1,am2)
 
-U-Boot/ii1-am2_p03_a12_sd=$(call U-Boot/ii1-am2_sd_template,stm32mp157c-ii1-am2_p03_a12)
-U-Boot/ii1-am2_p03_a12_emmc=$(call U-Boot/ii1-am2_emmc_template,stm32mp157c-ii1-am2_p03_a12)
+U-Boot/ii1-am2_p03_a12_sd=$(call U-Boot/sd_template,ii1,am2_p03_a12)
+U-Boot/ii1-am2_p03_a12_emmc=$(call U-Boot/emmc_template,ii1,am2_p03_a12)
+
+U-Boot/ii2-bmm1_sd=$(call U-Boot/sd_template,ii2,bmm1)
+U-Boot/ii2-bmm1_emmc=$(call U-Boot/emmc_template,ii2,bmm1)
 
 UBOOT_TARGETS := \
 	ii1-am2_sd \
 	ii1-am2_emmc \
 	ii1-am2_p03_a12_sd \
-	ii1-am2_p03_a12_emmc
+	ii1-am2_p03_a12_emmc \
+	ii2-bmm1_sd \
+	ii2-bmm1_emmc
 
 UBOOT_MAKE_FLAGS += \
 	DEVICE_TREE=$(DTB_FILE_NAME)
