@@ -1,4 +1,4 @@
-# Copyright (C) 2023  Braiins Systems s.r.o.
+# Copyright (C) 2024  Braiins Systems s.r.o.
 #
 # This file is part of Braiins Open-Source Initiative (BOSI).
 #
@@ -22,41 +22,41 @@
 
 include $(TOPDIR)/rules.mk
 
-PKG_NAME:=boot-stm32mp15_ii1
+PKG_NAME:=boot-stm32mp15_ii2
 PKG_RELEASE:=1
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/kernel.mk
 
 LINUX_BOOT_DIR:=$(LINUX_DIR)/arch/$(LINUX_KARCH)/boot
-DTB_VARIANT_NAME_ii1_am2:=stm32mp157c-ii1-am2 stm32mp157c-ii1-am2_p03_a12
+DTB_VARIANT_NAME_ii2_bmm1:=stm32mp157c-ii2-bmm1
 BOOT_SCR_NAME:=boot
 
-define Package/boot-stm32mp15_ii1
+define Package/boot-stm32mp15_ii2
   SECTION:=boot
   CATEGORY:=Boot Loaders
-  TITLE:=Boot package for Braiins Control Board (stm32mp15_ii1)
-  DEPENDS:=@LINUX_5_10 @TARGET_stm32mp15_ii1
+  TITLE:=Boot package for Braiins Control Board (stm32mp15_ii2)
+  DEPENDS:=@LINUX_5_10 @TARGET_stm32mp15_ii2
 endef
 
-define Package/boot-stm32mp15_ii1/description
+define Package/boot-stm32mp15_ii2/description
   Package with Linux kernel and boot scripts.
 endef
 
 define Build/Compile
 	$(STAGING_DIR_HOST)/bin/mkimage -A $(ARCH) -O linux -T script -C none \
-		-n 'Braiins U-Boot script (stm32mp15_ii1)' \
+		-n 'Braiins U-Boot script (stm32mp15_ii2)' \
 		-d ./files/$(BOOT_SCR_NAME).txt \
 		$(PKG_BUILD_DIR)/$(BOOT_SCR_NAME).scr
 endef
 
-define Package/boot-stm32mp15_ii1/install
+define Package/boot-stm32mp15_ii2/install
 	$(INSTALL_DIR) $(1)/boot
 	$(INSTALL_DATA) $(LINUX_BOOT_DIR)/zImage $(1)/boot/
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/$(BOOT_SCR_NAME).scr $(1)/boot
-$(foreach dtb,$(DTB_VARIANT_NAME_ii1_am2),
+$(foreach dtb,$(DTB_VARIANT_NAME_ii2_bmm1),
 	$(INSTALL_DATA) $(LINUX_BOOT_DIR)/dts/$(dtb).dtb $(1)/boot/$(dtb).dtb
 )
 endef
 
-$(eval $(call BuildPackage,boot-stm32mp15_ii1))
+$(eval $(call BuildPackage,boot-stm32mp15_ii2))
