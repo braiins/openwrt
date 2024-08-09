@@ -1,4 +1,4 @@
-# Copyright (C) 2023  Braiins Systems s.r.o.
+# Copyright (C) 2024  Braiins Systems s.r.o.
 #
 # This file is part of Braiins Open-Source Initiative (BOSI).
 #
@@ -42,36 +42,43 @@ SOURCE_DATE_EPOCH := $(PKG_SOURCE_DATE_EPOCH)
 define Trusted-Firmware-A/Default
   BUILD_TARGET:=stm32mp15
   PLAT:=stm32mp1
+  MPU_NAME=stm32mp157c
   BOOT_DEVICE:=
   DEPENDS:=@LINUX_5_10 +u-boot-$(1)
-  BUILD_SUBTARGET:=ii1
 endef
 
-define Trusted-Firmware-A/ii1-am2_sd_template
-  NAME:=TF-A $(PKG_VERSION) for Braiins Control Board (stm32mp157c-ii1-am2/SD)
+define Trusted-Firmware-A/sd_template
+  NAME:=TF-A $(PKG_VERSION) for Braiins Control Board ($(MPU_NAME)-$(1)-$(2)/SD)
+  BUILD_SUBTARGET:=$(1)
   BUILD_DEVICES:=sd
   BOOT_DEVICE:=sd
-  DTB_FILE_NAME:=$(1)
+  DTB_FILE_NAME:=$(MPU_NAME)-$(1)-$(2)
 endef
 
-define Trusted-Firmware-A/ii1-am2_emmc_template
-  NAME:=TF-A $(PKG_VERSION) for Braiins Control Board (stm32mp157c-ii1-am2/eMMC)
+define Trusted-Firmware-A/emmc_template
+  NAME:=TF-A $(PKG_VERSION) for Braiins Control Board ($(MPU_NAME)-$(1)-$(2)/eMMC)
+  BUILD_SUBTARGET:=$(1)
   BUILD_DEVICES:=emmc
   BOOT_DEVICE:=emmc
-  DTB_FILE_NAME:=$(1)
+  DTB_FILE_NAME:=$(MPU_NAME)-$(1)-$(2)
 endef
 
-Trusted-Firmware-A/ii1-am2_sd=$(call Trusted-Firmware-A/ii1-am2_sd_template,stm32mp157c-ii1-am2)
-Trusted-Firmware-A/ii1-am2_emmc=$(call Trusted-Firmware-A/ii1-am2_emmc_template,stm32mp157c-ii1-am2)
+Trusted-Firmware-A/ii1-am2_sd=$(call Trusted-Firmware-A/sd_template,ii1,am2)
+Trusted-Firmware-A/ii1-am2_emmc=$(call Trusted-Firmware-A/emmc_template,ii1,am2)
 
-Trusted-Firmware-A/ii1-am2_p03_a12_sd=$(call Trusted-Firmware-A/ii1-am2_sd_template,stm32mp157c-ii1-am2_p03_a12)
-Trusted-Firmware-A/ii1-am2_p03_a12_emmc=$(call Trusted-Firmware-A/ii1-am2_emmc_template,stm32mp157c-ii1-am2_p03_a12)
+Trusted-Firmware-A/ii1-am2_p03_a12_sd=$(call Trusted-Firmware-A/sd_template,ii1,am2_p03_a12)
+Trusted-Firmware-A/ii1-am2_p03_a12_emmc=$(call Trusted-Firmware-A/emmc_template,ii1,am2_p03_a12)
+
+Trusted-Firmware-A/ii2-bmm1_sd=$(call Trusted-Firmware-A/sd_template,ii2,bmm1)
+Trusted-Firmware-A/ii2-bmm1_emmc=$(call Trusted-Firmware-A/emmc_template,ii2,bmm1)
 
 TFA_TARGETS:= \
 	ii1-am2_sd \
 	ii1-am2_emmc \
 	ii1-am2_p03_a12_sd \
-	ii1-am2_p03_a12_emmc
+	ii1-am2_p03_a12_emmc \
+	ii2-bmm1_sd \
+	ii2-bmm1_emmc
 
 TFA_MAKE_FLAGS += \
 	BUILD_BASE=build-$(BUILD_VARIANT) \
