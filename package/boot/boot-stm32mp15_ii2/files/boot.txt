@@ -1,0 +1,15 @@
+echo "Loading Linux kernel..."
+load mmc ${boot_instance}:${rootfs_part} $kernel_addr_r boot/zImage || exit 1
+
+echo "Loading Device Tree..."
+load mmc ${boot_instance}:${rootfs_part} $fdt_addr_r boot/$fdtfile || exit 1
+
+echo "Boot environment:"
+setenv kernel_rootfs "/dev/mmcblk${boot_instance}p${rootfs_part}"
+setenv bootargs "root=${kernel_rootfs} rootwait rw earlyprintk console=ttySTM0,115200 vt.global_cursor_default=0"
+printenv bootargs
+
+echo ""
+echo "Booting BOS from $kernel_rootfs: PARTLABEL=\"rootfs${rootfs_index}\"..."
+echo ""
+bootz $kernel_addr_r - $fdt_addr_r

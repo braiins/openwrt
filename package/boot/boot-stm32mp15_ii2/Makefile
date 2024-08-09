@@ -1,0 +1,62 @@
+# Copyright (C) 2023  Braiins Systems s.r.o.
+#
+# This file is part of Braiins Open-Source Initiative (BOSI).
+#
+# BOSI is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+# Please, keep in mind that we may also license BOSI or any part thereof
+# under a proprietary license. For more information on the terms and conditions
+# of such proprietary license or if you have any other questions, please
+# contact us at opensource@braiins.com.
+
+include $(TOPDIR)/rules.mk
+
+PKG_NAME:=boot-stm32mp15_ii1
+PKG_RELEASE:=1
+
+include $(INCLUDE_DIR)/package.mk
+include $(INCLUDE_DIR)/kernel.mk
+
+LINUX_BOOT_DIR:=$(LINUX_DIR)/arch/$(LINUX_KARCH)/boot
+DTB_VARIANT_NAME_ii1_am2:=stm32mp157c-ii1-am2 stm32mp157c-ii1-am2_p03_a12
+BOOT_SCR_NAME:=boot
+
+define Package/boot-stm32mp15_ii1
+  SECTION:=boot
+  CATEGORY:=Boot Loaders
+  TITLE:=Boot package for Braiins Control Board (stm32mp15_ii1)
+  DEPENDS:=@LINUX_5_10 @TARGET_stm32mp15_ii1
+endef
+
+define Package/boot-stm32mp15_ii1/description
+  Package with Linux kernel and boot scripts.
+endef
+
+define Build/Compile
+	$(STAGING_DIR_HOST)/bin/mkimage -A $(ARCH) -O linux -T script -C none \
+		-n 'Braiins U-Boot script (stm32mp15_ii1)' \
+		-d ./files/$(BOOT_SCR_NAME).txt \
+		$(PKG_BUILD_DIR)/$(BOOT_SCR_NAME).scr
+endef
+
+define Package/boot-stm32mp15_ii1/install
+	$(INSTALL_DIR) $(1)/boot
+	$(INSTALL_DATA) $(LINUX_BOOT_DIR)/zImage $(1)/boot/
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/$(BOOT_SCR_NAME).scr $(1)/boot
+$(foreach dtb,$(DTB_VARIANT_NAME_ii1_am2),
+	$(INSTALL_DATA) $(LINUX_BOOT_DIR)/dts/$(dtb).dtb $(1)/boot/$(dtb).dtb
+)
+endef
+
+$(eval $(call BuildPackage,boot-stm32mp15_ii1))
