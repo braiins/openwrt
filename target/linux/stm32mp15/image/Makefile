@@ -40,8 +40,9 @@ define Build/stm32mp15-sysupgrade-tar
 	$(BOS_VERSION_SED_SCRIPT) $@.tmp/sysupgrade-$(BUILD_NAME)/COMMAND
 	cat COMMAND >> $@.tmp/sysupgrade-$(BUILD_NAME)/COMMAND
 
-	$(call copy-bootloaders,default)
-	$(call copy-bootloaders,p03_a12)
+	$(foreach revision,default $(BOARD_REVISIONS), \
+		$(call copy-bootloaders,$(revision))
+	)
 
 	ln -s $(IMAGE_ROOTFS) $@.tmp/sysupgrade-$(BUILD_NAME)/rootfs.img
 
@@ -115,7 +116,8 @@ endef
 define Device/sd
   DEVICE_TITLE := STM32MP15 SD Card Image
   FILESYSTEMS := squashfs
-  IMAGES := sysupgrade.tar user.img.gz user_p03_a12.img.gz
+  IMAGES := sysupgrade.tar user.img.gz \
+	$(patsubst %,user_%.img.gz,$(BOARD_REVISIONS))
   IMAGE_METADATA := $(FORMAT_VERSION),$(BOS_MODE_SD)
   IMAGE/sysupgrade.tar := stm32mp15-sysupgrade-tar | append-metadata
   IMAGE/user.img.gz := stm32mp15-sdcard default | gzip
@@ -127,7 +129,9 @@ define Device/emmc
   DEVICE_TITLE := STM32MP15 eMMC Image
   FILESYSTEMS := squashfs
   IMAGES := sysupgrade.tar mmcblk0gp0.img
-  ARTIFACTS := mmcblk0bootx.img.gz mmcblk0.img.gz mmcblk0bootx_p03_a12.img.gz mmcblk0_p03_a12.img.gz
+  ARTIFACTS := mmcblk0bootx.img.gz mmcblk0.img.gz \
+	$(patsubst %,mmcblk0bootx_%.img.gz,$(BOARD_REVISIONS)) \
+	$(patsubst %,mmcblk0_%.img.gz,$(BOARD_REVISIONS))
   IMAGE_METADATA := $(FORMAT_VERSION),$(BOS_MODE_EMMC)
   IMAGE/sysupgrade.tar := stm32mp15-sysupgrade-tar | append-metadata
   IMAGE/mmcblk0gp0.img := append-rootfs | pad-to $$$$(MMC_BLOCK_SIZE)

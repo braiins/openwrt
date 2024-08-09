@@ -8,7 +8,7 @@ ARCH:=arm
 BOARD:=stm32mp15
 BOARDNAME:=STMicroelectronics STM32MP15 SoCs
 FEATURES:=fpu gpio rtc usb usbgadget ext4 squashfs targz boot-part rootfs-part
-SUBTARGETS:=ii1
+SUBTARGETS:=ii1 ii2
 MAINTAINER:=Braiins <braiins@braiins.com>
 
 KERNEL_PATCHVER:=5.10
