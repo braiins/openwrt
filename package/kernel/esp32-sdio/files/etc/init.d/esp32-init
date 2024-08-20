@@ -1,0 +1,20 @@
+#!/bin/sh /etc/rc.common
+
+. /lib/functions/bos-defaults.sh
+. /lib/functions/esp32-wifi.sh
+
+START=13
+
+boot() {
+    if is_factory_default; then
+        # It's in factory default state, configure AP mode
+        logger -t esp32-wifi "Loading FG firmware"
+        flash_fg_firmware
+        modprobe esp32-sdio-fg
+    else
+        # It's NOT in factory default state, configure STA mode
+        logger -t esp32-wifi "Loading NG firmware"
+        flash_ng_firmware
+        modprobe esp32-sdio
+    fi
+}

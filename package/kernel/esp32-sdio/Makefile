@@ -42,7 +42,7 @@ include $(INCLUDE_DIR)/package.mk
 define KernelPackage/esp32-sdio-ng
   SUBMENU:=Wireless Drivers
   TITLE:=ESP32-SDIO NG driver optimized for Espressif chips used in SDIO mode
-  DEPENDS:=+@DRIVER_11N_SUPPORT +kmod-mac80211 +kmod-cfg80211 +kmod-bluetooth +wireless-tools
+  DEPENDS:=+@DRIVER_11N_SUPPORT +kmod-mac80211 +kmod-cfg80211 +kmod-bluetooth +wireless-tools +esp32-sdio-common
   FILES:=$(PKG_BUILD_DIR)/esp_hosted_ng/host/esp32_sdio.ko
   PROVIDES:=kmod-esp32-sdio-ng
   VARIANT:=regular
@@ -51,6 +51,7 @@ endef
 define KernelPackage/esp32-sdio-fg
   SUBMENU:=Wireless Drivers
   TITLE:=ESP32-SDIO FG driver optimized for Espressif chips used in SDIO mode
+  DEPENDS:=+esp32-sdio-common
   FILES:=$(PKG_BUILD_DIR)/esp_hosted_fg/host/linux/host_driver/esp32/esp32_sdio_fg.ko
   PROVIDES:=kmod-esp32-sdio-fg
   VARIANT:=regular
@@ -61,6 +62,13 @@ define Package/esp32-sdio-cli
   CATEGORY:=Utilities
   TITLE:=Utility for managing esp32-sdio-fg kernel driver
   DEPENDS=+kmod-esp32-sdio-fg
+endef
+
+define Package/esp32-sdio-common
+  SECTION:=utils
+  CATEGORY:=Utilities
+  TITLE:=Scripts for bringing up and managing esp32 based wifi
+  DEPENDS=+espflash +ii-gpiod-tools @TARGET_stm32mp15_ii2
 endef
 
 NOSTDINC_FLAGS_NG := \
@@ -112,6 +120,14 @@ define Package/esp32-sdio-cli/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/esp_hosted_fg/host/linux/host_control/c_support/test.out $(1)/usr/bin/esp32-sdio-cli
 endef
 
+define Package/esp32-sdio-common/install
+	$(INSTALL_DIR) $(1)/etc/init.d
+	$(INSTALL_BIN) ./files/etc/init.d/esp32-init $(1)/etc/init.d/esp32-init
+
+	$(INSTALL_DIR) $(1)/lib/functions/
+	$(INSTALL_DATA) ./files/lib/functions/esp32-wifi.sh $(1)/lib/functions/esp32-wifi.sh
+endef
+
 define Package/esp32-sdio-ng/config
 	source "$(SOURCE)/Config.in"
 endef
@@ -146,3 +162,4 @@ endef
 $(eval $(call KernelPackage,esp32-sdio-ng))
 $(eval $(call KernelPackage,esp32-sdio-fg))
 $(eval $(call BuildPackage,esp32-sdio-cli))
+$(eval $(call BuildPackage,esp32-sdio-common))

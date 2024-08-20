@@ -6,6 +6,7 @@ BOS_MODE_PATH="/etc/bos_mode"
 BOS_REVISION_PATH="/etc/bos_revision"
 BOS_PLATFORM_PATH="/etc/bos_platform"
 BOS_VERSION_PATH="/etc/bos_version"
+FACTORY_DEFAULT_FLAG_PATH="/etc/factory-default"
 MINER_HWID_PATH="/tmp/miner_hwid"
 NVMEM_PATH="/sys/bus/nvmem/devices/stm32-romem0/nvmem"
 
@@ -68,6 +69,16 @@ board_iface() {
 	local bos_platform=$(bos_platform)
 	echo ${bos_platform##*-}
 	return 0
+}
+
+is_factory_default() {
+	if [ -f "${FACTORY_DEFAULT_FLAG_PATH}" ]; then
+		echo yes
+		return 0
+	else
+		echo no
+		return 1
+	fi
 }
 
 get_env_config() {
