@@ -71,6 +71,20 @@ board_iface() {
 	return 0
 }
 
+default_ssid() {
+	MAC_ID=$(cat /sys/class/net/eth0/address | tr -d ':' | cut -c '10-')
+	board=$(bos_platform)
+
+	case "$board" in
+		stm32mp157c-ii2-bmm1)
+			echo "Mini Miner Setup [${MAC_ID}]"
+			;;
+		*)
+			echo "BraiinsOS Setup [${MAC_ID}]"
+			;;
+	esac
+}
+
 is_factory_default() {
 	if [ -f "${FACTORY_DEFAULT_FLAG_PATH}" ]; then
 		echo yes

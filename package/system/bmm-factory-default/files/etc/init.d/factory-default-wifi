@@ -1,0 +1,21 @@
+#!/bin/sh /etc/rc.common
+
+. /lib/functions/bos-defaults.sh
+. /lib/functions/esp32-wifi.sh
+
+START=19
+STOP=90
+
+start() {
+    if is_factory_default; then
+        logger -t factory-default-wifi "Device is in factory default state"
+        start_wifi_ap "$(default_ssid)"
+    fi
+}
+
+stop() {
+    if is_factory_default; then
+        logger -t factory-default-wifi "Device is in factory default state"
+        stop_wifi_ap
+    fi
+}

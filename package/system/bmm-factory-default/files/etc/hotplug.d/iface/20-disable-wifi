@@ -1,0 +1,20 @@
+. /lib/functions/bos-defaults.sh
+. /lib/functions/esp32-wifi.sh
+
+WATCH_DEVICE="eth0"
+WATCH_INTF="lan"
+
+if is_factory_default; then
+    # Device is in factory default state and ethernet just got up and has an ip address so turn off the wifi
+    if [ "${ACTION}" = "ifup" ] && [ "${DEVICE}" == "${WATCH_DEVICE}" ] && [ "${INTERFACE}" == "${WATCH_INTF}" ]; then
+        logger -t iface-hotplug "Address acquired on ${WATCH_INTF}, disabling hotspot"
+        stop_wifi_ap
+    fi
+
+    # Device is in factory default state and ethernet was just disconnected, bring up hotspot again
+    # NOTE: ifup hotplug event doesn't contain the DEVICE variable so we can't depend on it here
+    if [ "${ACTION}" = "ifdown" ] && [ "${INTERFACE}" == "${WATCH_INTF}" ]; then
+        logger -t iface-hotplug "Interface ${WATCH_INTF} goes down enabling hotspot"
+        start_wifi_ap "$(default_ssid)"
+    fi
+fi

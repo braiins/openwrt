@@ -41,6 +41,12 @@ endef
 define Package/bmm-factory-default/install
 	$(INSTALL_DIR) $(1)/etc
 	$(INSTALL_DATA) ./files/etc/factory-default $(1)/etc/factory-default
+
+	$(INSTALL_DIR) $(1)/etc/init.d
+	$(INSTALL_BIN) ./files/etc/init.d/factory-default-wifi $(1)/etc/init.d/factory-default-wifi
+
+	$(INSTALL_DIR) $(1)/etc/hotplug.d/iface
+	$(INSTALL_DATA) ./files/etc/hotplug.d/iface/20-disable-wifi $(1)/etc/hotplug.d/iface/20-disable-wifi
 endef
 
 $(eval $(call BuildPackage,bmm-factory-default))
