@@ -140,7 +140,7 @@ define KernelPackage/esp32-sdio-ng/install
 	$(call InstallSdioFirmware,$(1),ng)
 
 	$(INSTALL_DIR) $(1)/etc/hotplug.d/ieee80211/
-	$(INSTALL_BIN) ./files/00-copy-mac $(1)/etc/hotplug.d/ieee80211/00-copy-mac
+	$(INSTALL_BIN) ./files/etc/hotplug.d/ieee80211/00-copy-mac $(1)/etc/hotplug.d/ieee80211/00-copy-mac
 endef
 
 $(eval $(call KernelPackage,esp32-sdio-ng))
