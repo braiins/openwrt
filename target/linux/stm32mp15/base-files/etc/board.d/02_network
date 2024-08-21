@@ -1,0 +1,34 @@
+. /lib/functions/bos-defaults.sh
+. /lib/functions.sh
+. /lib/functions/system.sh
+
+board=$(bos_platform)
+
+case "$board" in
+stm32mp157c-ii2-bmm1)
+
+# Set static IP for the wifi AP interface and setup DHCP server
+uci batch << EOI
+set network.wifi-ap='interface'
+set network.wifi-ap.ifname='ethap0'
+set network.wifi-ap.proto='static'
+set network.wifi-ap.ipaddr='10.0.0.21'
+set network.wifi-ap.netmask='255.255.255.0'
+set dhcp.wifi-ap='dhcp'
+set dhcp.wifi-ap.interface='wifi-ap'
+set dhcp.wifi-ap.start='100'
+set dhcp.wifi-ap.limit='150'
+set dhcp.wifi-ap.leasetime='1m'
+set dhcp.wifi-ap.dhcpv4='server'
+set dhcp.wifi-ap.dhcpv6='disabled'
+set dhcp.wifi-ap.ra='disabled'
+EOI
+
+# Disable DHCP server on the ethernet
+uci set dhcp.lan.ignore=1
+
+uci commit
+	;;
+esac
+
+exit 0
