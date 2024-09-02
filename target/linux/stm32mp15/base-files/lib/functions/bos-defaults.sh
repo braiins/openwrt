@@ -11,6 +11,7 @@ NVMEM_PATH="/sys/bus/nvmem/devices/stm32-romem0/nvmem"
 
 BRAIINS_BOARD_stm32mp157c_ii1_am2="braiins,stm32mp157c-ii1-am2"
 BRAIINS_BOARD_stm32mp157c_ii1_am2_p03_a12="braiins,stm32mp157c-ii1-am2_p03_a12"
+BRAIINS_BOARD_stm32mp157c_ii2_bmm1="braiins,stm32mp157c-ii2-bmm1"
 
 EMMC_BOOT_DEV="mmcblk0boot0"
 EMMC_BOOT_BACKUP_DEV="mmcblk0boot1"
