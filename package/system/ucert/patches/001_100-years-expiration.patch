@@ -1,0 +1,12 @@
+--- a/ucert.c
++++ b/ucert.c
+@@ -478,7 +478,8 @@
+ 		blobmsg_add_u32(&payloadbuf, "certtype", revoker?CERTTYPE_REVOKE:CERTTYPE_AUTH);
+ 		blobmsg_add_u64(&payloadbuf, "validfrom", tv.tv_sec);
+ 		if (!revoker) {
+-			blobmsg_add_u64(&payloadbuf, "expiresat", tv.tv_sec + 60 * 60 * 24 * 365);
++			// 50 years!!!
++			blobmsg_add_u64(&payloadbuf, "expiresat", tv.tv_sec + 60 * 60 * 24 * 365 * 50);
+ 			blobmsg_add_string(&payloadbuf, "pubkey", pkb);
+ 		} else {
+ 			blobmsg_add_string(&payloadbuf, "fingerprint", pkfp);
