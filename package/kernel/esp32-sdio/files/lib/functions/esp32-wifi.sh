@@ -46,10 +46,10 @@ flash_ng_firmware() {
 
 start_wifi_ap() {
     esp32-sdio-cli softap_start "$1"
-    ifup wifi-ap
+    ifup wifi_ap
 }
 
 stop_wifi_ap() {
     esp32-sdio-cli softap_stop
-    ifdown wifi-ap
+    ifdown wifi_ap
 }
