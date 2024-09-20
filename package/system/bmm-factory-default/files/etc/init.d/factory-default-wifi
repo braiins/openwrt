@@ -3,7 +3,7 @@
 . /lib/functions/bos-defaults.sh
 . /lib/functions/esp32-wifi.sh
 
-START=19
+START=21
 STOP=90
 
 start() {
