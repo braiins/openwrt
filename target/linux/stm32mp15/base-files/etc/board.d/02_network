@@ -1,18 +1,21 @@
 . /lib/functions/bos-defaults.sh
 . /lib/functions.sh
 . /lib/functions/system.sh
+. /lib/functions/captive-portal.sh
 
 board=$(bos_platform)
 
 case "$board" in
 stm32mp157c-ii2-bmm1)
 
+wifi_ap_ipaddr="10.0.0.21"
+
 # Set static IP for the wifi AP interface and setup DHCP server
 uci batch << EOI
 set network.wifi_ap='interface'
 set network.wifi_ap.ifname='ethap0'
 set network.wifi_ap.proto='static'
-set network.wifi_ap.ipaddr='10.0.0.21'
+set network.wifi_ap.ipaddr=$wifi_ap_ipaddr
 set network.wifi_ap.netmask='255.255.255.0'
 set dhcp.wifi_ap='dhcp'
 set dhcp.wifi_ap.interface='wifi_ap'
@@ -28,6 +31,9 @@ EOI
 uci set dhcp.lan.ignore=1
 
 uci commit
+
+enable_captive_portal "$wifi_ap_ipaddr"
+
 	;;
 esac
 
