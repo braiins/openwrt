@@ -38,6 +38,10 @@ define Build/Compile
 
 endef
 
+define Package/bmm-factory-default/conffiles
+/etc/factory-default
+endef
+
 define Package/bmm-factory-default/install
 	$(INSTALL_DIR) $(1)/etc
 	$(INSTALL_DATA) ./files/etc/factory-default $(1)/etc/factory-default
