@@ -121,6 +121,9 @@ define Package/esp32-sdio-cli/install
 endef
 
 define Package/esp32-sdio-common/install
+	$(INSTALL_DIR) $(1)/usr/bin
+	$(INSTALL_BIN) ./files/usr/bin/esp32-fw-log $(1)/usr/bin/esp32-fw-log
+
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) ./files/etc/init.d/esp32-init $(1)/etc/init.d/esp32-init
 

@@ -1,5 +1,6 @@
 #!/bin/sh
 
+ESP32_UART_PATH="/dev/ttySTM2"
 WIFI_BOOT_PIN_TIMEOUT=1
 
 reboot_esp() {
@@ -21,10 +22,9 @@ reboot_esp_to_app() {
 
 flash_firmware() {
     local FW_PATH="$1"
-    local UART_PATH="/dev/ttySTM2"
     local UART_SPEED="4000000"
 
-    /usr/bin/espflash -p "$UART_PATH" \
+    /usr/bin/espflash -p "$ESP32_UART_PATH" \
                       -s "$UART_SPEED" \
                       -l "$FW_PATH/bootloader.bin" \
                       -a "$FW_PATH/network_adapter.bin" \

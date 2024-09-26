@@ -1,0 +1,12 @@
+#!/bin/sh
+
+if [ $# -ne 2 ]; then
+    echo "$0 <path/to/uart/device> <speed>"
+    return 1
+fi
+
+UART=$1
+SPEED=$2
+
+/bin/stty -F "$UART" raw "$SPEED"
+/bin/cat "$UART"
