@@ -9,18 +9,20 @@ START=13
 STOP=99
 
 APP=/usr/bin/esp32-fw-log
+FORCE_PARAM="--force-ng"
 
 flash_firmware_local() {
-    if is_factory_default; then
-        # It's in factory default state, configure AP mode
-        logger -t esp32-wifi "Loading FG firmware"
-        flash_fg_firmware
-        modprobe esp32-sdio-fg
-    else
+    if ! is_factory_default || [ "$1" == "${FORCE_PARAM}" ]; then
         # It's NOT in factory default state, configure STA mode
         logger -t esp32-wifi "Loading NG firmware"
         flash_ng_firmware
         modprobe esp32-sdio
+        
+    else
+        # It's in factory default state, configure AP mode
+        logger -t esp32-wifi "Loading FG firmware"
+        flash_fg_firmware
+        modprobe esp32-sdio-fg
     fi
 }
 
@@ -42,6 +44,7 @@ start_service() {
 reload_service()
 {
     stop
-    flash_firmware_local
+    rmmod esp32-sdio &>/dev/null || true
+    flash_firmware_local "$@"
     start "$@"
 }
