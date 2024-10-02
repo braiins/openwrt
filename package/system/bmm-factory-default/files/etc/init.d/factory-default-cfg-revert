@@ -1,0 +1,17 @@
+#!/bin/sh /etc/rc.common
+
+. /lib/functions/bos-defaults.sh
+
+# This script must start right before the /etc/init.d/boot
+START=09
+
+boot() {
+	if is_factory_default; then
+		rm -rf /etc/board.json
+
+		rm -rf /etc/config/*
+		cp -r /rom/etc/config/* /etc/config/
+
+		cp -r /rom/etc/uci-defaults/* /etc/uci-defaults/
+	fi
+}
