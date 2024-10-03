@@ -1,40 +1,46 @@
 . /lib/functions/bos-defaults.sh
 . /lib/functions.sh
-. /lib/functions/system.sh
 . /lib/functions/captive-portal.sh
+. /lib/functions/uci-defaults.sh
 
 board=$(bos_platform)
 
+board_config_update
+
 case "$board" in
-stm32mp157c-ii2-bmm1)
+        stm32mp157c-ii2-bmm1)
+                wifi_ap_ipaddr="10.0.0.21"
 
-wifi_ap_ipaddr="10.0.0.21"
+                # Prepare wifi interface
+                ucidef_set_interface "wifi_ap" device "ethap0" protocol "static" ipaddr "$wifi_ap_ipaddr" netmask "255.255.255.0"
 
-# Set static IP for the wifi AP interface and setup DHCP server
-uci batch << EOI
-set network.wifi_ap='interface'
-set network.wifi_ap.ifname='ethap0'
-set network.wifi_ap.proto='static'
-set network.wifi_ap.ipaddr=$wifi_ap_ipaddr
-set network.wifi_ap.netmask='255.255.255.0'
-set dhcp.wifi_ap='dhcp'
-set dhcp.wifi_ap.interface='wifi_ap'
-set dhcp.wifi_ap.start='100'
-set dhcp.wifi_ap.limit='150'
-set dhcp.wifi_ap.leasetime='1m'
-set dhcp.wifi_ap.dhcpv4='server'
-set dhcp.wifi_ap.dhcpv6='disabled'
-set dhcp.wifi_ap.ra='disabled'
-EOI
+                # Prepare Ethernet interface
+                ucidef_set_interface "eth_lan" device "eth0" protocol dhcp
 
-# Disable DHCP server on the ethernet
-uci set dhcp.lan.ignore=1
+                # Set static IP for the wifi AP interface and setup DHCP server
+                uci -q batch <<-EOF
+                        set dhcp.wifi_ap='dhcp'
+                        set dhcp.wifi_ap.interface='wifi_ap'
+                        set dhcp.wifi_ap.start='100'
+                        set dhcp.wifi_ap.limit='150'
+                        set dhcp.wifi_ap.leasetime='1m'
+                        set dhcp.wifi_ap.dhcpv4='server'
+                        set dhcp.wifi_ap.dhcpv6='disabled'
+                        set dhcp.wifi_ap.ra='disabled'
+                EOF
 
-uci commit
+                # Disable DHCP server on the ethernet
+                uci set dhcp.lan.ignore=1
 
-enable_captive_portal "$wifi_ap_ipaddr"
+                uci commit
 
-	;;
+                enable_captive_portal "$wifi_ap_ipaddr"
+                ;;
+        *)
+                ucidef_set_interface "eth_lan" device "eth0" protocol dhcp
+                ;;
 esac
+
+board_config_flush
 
 exit 0

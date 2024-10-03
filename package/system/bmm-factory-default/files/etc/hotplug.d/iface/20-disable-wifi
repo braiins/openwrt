@@ -2,7 +2,7 @@
 . /lib/functions/esp32-wifi.sh
 
 WATCH_DEVICE="eth0"
-WATCH_INTF="lan"
+WATCH_INTF="eth_lan"
 
 if is_factory_default; then
     # Device is in factory default state and ethernet just got up and has an ip address so turn off the wifi
