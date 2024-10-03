@@ -54,7 +54,7 @@ define Package/bmm-factory-default/install
 	$(INSTALL_DATA) ./files/etc/hotplug.d/iface/20-disable-wifi $(1)/etc/hotplug.d/iface/20-disable-wifi
 
 	$(INSTALL_DIR) $(1)/lib/functions
-	$(INSTALL_DATA) ./files/lib/functions/captive-portal.sh $(1)/lib/functions/captive-portal.sh
+	$(INSTALL_DATA) ./files/lib/functions/bos-factory-default.sh $(1)/lib/functions/bos-factory-default.sh
 endef
 
 $(eval $(call BuildPackage,bmm-factory-default))

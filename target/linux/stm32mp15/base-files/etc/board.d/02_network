@@ -1,6 +1,5 @@
 . /lib/functions/bos-defaults.sh
 . /lib/functions.sh
-. /lib/functions/captive-portal.sh
 . /lib/functions/uci-defaults.sh
 
 board=$(bos_platform)
@@ -11,6 +10,7 @@ case "$board" in
         stm32mp157c-ii2-bmm1)
                 wifi_ap_ipaddr="10.0.0.21"
 
+                . /lib/functions/bos-factory-default.sh
                 # Prepare wifi interface
                 ucidef_set_interface "wifi_ap" device "ethap0" protocol "static" ipaddr "$wifi_ap_ipaddr" netmask "255.255.255.0"
 
