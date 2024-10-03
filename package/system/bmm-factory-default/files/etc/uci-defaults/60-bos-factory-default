@@ -1,0 +1,42 @@
+#!/bin/sh
+
+. /lib/functions/bos-defaults.sh
+
+board=$(bos_platform)
+
+case "$board" in
+	stm32mp157c-ii2-bmm1)
+		. /lib/functions/bos-factory-default.sh
+
+		# Configure router metric for the LAN interface
+		uci -q set network.eth_lan.metric='100'
+
+		# Configure empty interface for the WiFi STA mode
+		uci -q batch <<-EOF
+			set network.wifi_sta='interface'
+			set network.wifi_sta.proto='dhcp'
+			set network.wifi_sta.metric='1000'
+		EOF
+
+		# Set static IP for the wifi AP interface and setup DHCP server
+		uci -q batch <<-EOF
+			set dhcp.wifi_ap='dhcp'
+			set dhcp.wifi_ap.interface='${FACTORY_DEFAULT_AP_INTF_NAME}'
+			set dhcp.wifi_ap.start='100'
+			set dhcp.wifi_ap.limit='150'
+			set dhcp.wifi_ap.leasetime='1m'
+			set dhcp.wifi_ap.dhcpv4='server'
+			set dhcp.wifi_ap.dhcpv6='disabled'
+			set dhcp.wifi_ap.ra='disabled'
+		EOF
+
+		# Disable DHCP server on the ethernet
+		uci set dhcp.eth_lan.ignore=1
+
+		uci commit
+
+		enable_captive_portal "$FACTORY_DEFAULT_AP_IP_ADDR"
+		;;
+esac
+
+exit 0

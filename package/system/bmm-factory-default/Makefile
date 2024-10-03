@@ -55,6 +55,9 @@ define Package/bmm-factory-default/install
 
 	$(INSTALL_DIR) $(1)/lib/functions
 	$(INSTALL_DATA) ./files/lib/functions/bos-factory-default.sh $(1)/lib/functions/bos-factory-default.sh
+
+	$(INSTALL_DIR) $(1)/etc/uci-defaults
+	$(INSTALL_DATA) ./files/etc/uci-defaults/60-bos-factory-default $(1)/etc/uci-defaults/60-bos-factory-default
 endef
 
 $(eval $(call BuildPackage,bmm-factory-default))

@@ -1,5 +1,9 @@
 #!/bin/sh
 
+FACTORY_DEFAULT_AP_IP_ADDR="10.0.0.21"
+FACTORY_DEFAULT_AP_IP_MASK="255.255.255.0"
+FACTORY_DEFAULT_AP_INTF_NAME="wifi_ap"
+
 # Captive portal configuration
 
 enable_captive_portal() {
@@ -17,7 +21,7 @@ enable_captive_portal() {
 		add_list dhcp.@dnsmasq[0].address='/net/$ip_addr'
 		add_list dhcp.@dnsmasq[0].address='/html/$ip_addr'
 		# Forces clients to use $ip_addr as DNS
-		add_list dhcp.wifi_ap.dhcp_option="6,$ip_addr"
+		add_list dhcp.${FACTORY_DEFAULT_AP_INTF_NAME}.dhcp_option="6,$ip_addr"
 	EOF
 
 	uci commit
@@ -32,7 +36,7 @@ disable_captive_portal() {
 		delete dhcp.@dnsmasq[0].cachesize
 		delete dhcp.@dnsmasq[0].local_ttl
 		delete dhcp.@dnsmasq[0].address
-		delete dhcp.wifi_ap.dhcp_option
+		delete dhcp.${FACTORY_DEFAULT_AP_INTF_NAME}.dhcp_option
 	EOF
 
 	uci commit

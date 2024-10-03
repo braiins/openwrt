@@ -7,38 +7,18 @@ board=$(bos_platform)
 board_config_update
 
 case "$board" in
-        stm32mp157c-ii2-bmm1)
-                wifi_ap_ipaddr="10.0.0.21"
+	stm32mp157c-ii2-bmm1)
+		. /lib/functions/bos-factory-default.sh
 
-                . /lib/functions/bos-factory-default.sh
-                # Prepare wifi interface
-                ucidef_set_interface "wifi_ap" device "ethap0" protocol "static" ipaddr "$wifi_ap_ipaddr" netmask "255.255.255.0"
+		# Prepare wifi interface
+		ucidef_set_interface "$FACTORY_DEFAULT_AP_INTF_NAME" device "ethap0" protocol "static" ipaddr "$FACTORY_DEFAULT_AP_IP_ADDR" netmask "$FACTORY_DEFAULT_AP_IP_MASK"
 
-                # Prepare Ethernet interface
-                ucidef_set_interface "eth_lan" device "eth0" protocol dhcp
-
-                # Set static IP for the wifi AP interface and setup DHCP server
-                uci -q batch <<-EOF
-                        set dhcp.wifi_ap='dhcp'
-                        set dhcp.wifi_ap.interface='wifi_ap'
-                        set dhcp.wifi_ap.start='100'
-                        set dhcp.wifi_ap.limit='150'
-                        set dhcp.wifi_ap.leasetime='1m'
-                        set dhcp.wifi_ap.dhcpv4='server'
-                        set dhcp.wifi_ap.dhcpv6='disabled'
-                        set dhcp.wifi_ap.ra='disabled'
-                EOF
-
-                # Disable DHCP server on the ethernet
-                uci set dhcp.lan.ignore=1
-
-                uci commit
-
-                enable_captive_portal "$wifi_ap_ipaddr"
-                ;;
-        *)
-                ucidef_set_interface "eth_lan" device "eth0" protocol dhcp
-                ;;
+		# Prepare Ethernet interface
+		ucidef_set_interface "eth_lan" device "eth0" protocol dhcp
+		;;
+	*)
+		ucidef_set_interface "eth_lan" device "eth0" protocol dhcp
+		;;
 esac
 
 board_config_flush
