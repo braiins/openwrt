@@ -20,6 +20,7 @@ enable_captive_portal() {
 		add_list dhcp.@dnsmasq[0].address='/info/$ip_addr'
 		add_list dhcp.@dnsmasq[0].address='/net/$ip_addr'
 		add_list dhcp.@dnsmasq[0].address='/html/$ip_addr'
+		add_list dhcp.@dnsmasq[0].address='/network/$ip_addr'
 		# Forces clients to use $ip_addr as DNS
 		add_list dhcp.${FACTORY_DEFAULT_AP_INTF_NAME}.dhcp_option="6,$ip_addr"
 	EOF
