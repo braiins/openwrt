@@ -58,6 +58,9 @@ define Package/bmm-factory-default/install
 
 	$(INSTALL_DIR) $(1)/etc/uci-defaults
 	$(INSTALL_DATA) ./files/etc/uci-defaults/60-bos-factory-default $(1)/etc/uci-defaults/60-bos-factory-default
+
+	$(INSTALL_DIR) $(1)/usr/bin
+	$(INSTALL_BIN) ./files/usr/bin/reboot-to-user-configured.sh $(1)/usr/bin/reboot-to-user-configured.sh
 endef
 
 $(eval $(call BuildPackage,bmm-factory-default))
