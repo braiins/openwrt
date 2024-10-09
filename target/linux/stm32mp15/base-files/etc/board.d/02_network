@@ -2,6 +2,8 @@
 . /lib/functions.sh
 . /lib/functions/uci-defaults.sh
 
+ETH_INTF_NAME="eth_lan"
+
 board=$(bos_platform)
 
 board_config_update
@@ -14,10 +16,10 @@ case "$board" in
 		ucidef_set_interface "$FACTORY_DEFAULT_AP_INTF_NAME" device "ethap0" protocol "static" ipaddr "$FACTORY_DEFAULT_AP_IP_ADDR" netmask "$FACTORY_DEFAULT_AP_IP_MASK"
 
 		# Prepare Ethernet interface
-		ucidef_set_interface "eth_lan" device "eth0" protocol dhcp
+		ucidef_set_interface "$ETH_INTF_NAME" device "eth0" protocol dhcp
 		;;
 	*)
-		ucidef_set_interface "eth_lan" device "eth0" protocol dhcp
+		ucidef_set_interface "$ETH_INTF_NAME" device "eth0" protocol dhcp
 		;;
 esac
 
