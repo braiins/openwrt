@@ -29,8 +29,14 @@ case "$board" in
 			set dhcp.${FACTORY_DEFAULT_AP_INTF_NAME}.ra='disabled'
 		EOF
 
-		# Disable DHCP server on the ethernet
-		uci set dhcp.${FACTORY_DEFAULT_ETH_INTF_NAME}.ignore=1
+		# Disable DHCP server on all known interfaces where we don't want DHCP server
+		uci -q set dhcp.lan.ignore=1
+		uci -q batch <<-EOF
+			set dhcp.${FACTORY_DEFAULT_ETH_INTF_NAME}='dhcp'
+			set dhcp.${FACTORY_DEFAULT_ETH_INTF_NAME}.ignore=1
+			set dhcp.${FACTORY_DEFAULT_STA_INTF_NAME}='dhcp'
+			set dhcp.${FACTORY_DEFAULT_STA_INTF_NAME}.ignore=1
+		EOF
 
 		uci commit
 
