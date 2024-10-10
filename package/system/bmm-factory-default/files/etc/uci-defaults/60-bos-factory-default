@@ -30,7 +30,6 @@ case "$board" in
 		EOF
 
 		# Disable DHCP server on all known interfaces where we don't want DHCP server
-		uci -q set dhcp.lan.ignore=1
 		uci -q batch <<-EOF
 			set dhcp.${FACTORY_DEFAULT_ETH_INTF_NAME}='dhcp'
 			set dhcp.${FACTORY_DEFAULT_ETH_INTF_NAME}.ignore=1

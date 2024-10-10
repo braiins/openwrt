@@ -2,7 +2,13 @@
 . /lib/functions.sh
 . /lib/functions/uci-defaults.sh
 
-ETH_INTF_NAME="eth_lan"
+# To ensure backward compatibility, we need to have the ethernet interface named as "lan".
+# Unfortunately "lan" interface name triggers a code branch in the "config_generate" script,
+# which will always create a bridge for that interface (which is something we don't want).
+# To workaround it while still using the ucidef functions/board.json/config_generate apparatus,
+# we temporarily name the interface as "lan_temp" and strip the "_temp" suffix in
+# the uci-defaults script.
+ETH_INTF_NAME="lan_temp"
 
 board=$(bos_platform)
 

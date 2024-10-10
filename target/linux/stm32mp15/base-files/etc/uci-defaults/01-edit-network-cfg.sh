@@ -9,7 +9,12 @@ board=$(bos_platform)
 
 case "$board" in
 	stm32mp157c-ii2-bmm1|stm32mp157c-ii1-am2)
-		uci -q delete network.eth_lan6
+		# This is here for a special reason!
+		# See comments in /etc/board.d/02_network for details.
+		uci -q rename network.lan_temp='lan'
+
+		# Remove IPv6 config, we don't want it for now.
+		uci -q delete network.lan_temp6
 		uci -q delete dhcp.odhcpd
 	;;
 esac
