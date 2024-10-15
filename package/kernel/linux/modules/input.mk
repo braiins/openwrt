@@ -193,6 +193,25 @@ endef
 $(eval $(call KernelPackage,input-touchscreen-ads7846))
 
 
+define KernelPackage/input-touchscreen-goodix
+  SUBMENU:=$(INPUT_MODULES_MENU)
+  TITLE:=Goodix based touchscreens
+  DEPENDS:=+kmod-input-core
+  KCONFIG:= \
+	CONFIG_INPUT_TOUCHSCREEN=y \
+	CONFIG_TOUCHSCREEN_PROPERTIES=y \
+	CONFIG_TOUCHSCREEN_GOODIX
+  FILES:=$(LINUX_DIR)/drivers/input/touchscreen/goodix.ko
+  AUTOLOAD:=$(call AutoProbe,goodix)
+endef
+
+define KernelPackage/input-touchscreen-goodix/description
+  Kernel module for Goodix based touchscreens
+endef
+
+$(eval $(call KernelPackage,input-touchscreen-goodix))
+
+
 define KernelPackage/keyboard-imx
   SUBMENU:=$(INPUT_MODULES_MENU)
   TITLE:=IMX keypad support
