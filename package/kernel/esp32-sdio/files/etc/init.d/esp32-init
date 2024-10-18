@@ -11,6 +11,10 @@ STOP=99
 APP=/usr/bin/esp32-fw-log
 FORCE_PARAM="--force-ng"
 
+# Interface names without number since those can change
+FG_INTF="ethap"
+NG_INTF="wlan"
+
 flash_firmware_local() {
     if ! is_factory_default || [ "$1" == "${FORCE_PARAM}" ]; then
         # It's NOT in factory default state, configure STA mode
@@ -47,4 +51,34 @@ reload_service()
     rmmod esp32-sdio &>/dev/null || true
     flash_firmware_local "$@"
     start "$@"
+}
+
+extra_command "reload_await" "Reload and wait for the device to appear"
+
+reload_await() {
+    local max_wait=10
+
+    reload_service "$@"
+
+    local watch_intf
+    if ! is_factory_default || [ "$1" == "${FORCE_PARAM}" ]; then
+        watch_intf="$NG_INTF"
+    else
+        watch_intf="$FG_INTF"
+    fi
+
+    local wait_counter=0
+    while ! grep -q "$watch_intf" /proc/net/dev && [ $wait_counter -le $max_wait ]; do
+        echo "Waiting for the device $watch_intf"
+        sleep 1
+        wait_counter=$(( $wait_counter + 1 ))
+    done
+
+    if grep -q "$watch_intf" /proc/net/dev; then
+        echo "Device $watch_intf found"
+        return 0
+    else
+        echo "Device $watch_intf NOT found"
+        return 1
+   fi
 }
