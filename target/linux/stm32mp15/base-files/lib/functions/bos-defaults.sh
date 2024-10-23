@@ -8,6 +8,7 @@ BOS_PLATFORM_PATH="/etc/bos_platform"
 BOS_VERSION_PATH="/etc/bos_version"
 FACTORY_DEFAULT_FLAG_PATH="/etc/factory-default"
 MINER_HWID_PATH="/tmp/miner_hwid"
+WIFI_MAC_PATH="/tmp/wifi_mac"
 NVMEM_PATH="/sys/bus/nvmem/devices/stm32-romem0/nvmem"
 
 BRAIINS_BOARD_stm32mp157c_ii1_am2="braiins,stm32mp157c-ii1-am2"
@@ -29,6 +30,7 @@ UBOOT_ENV_FULL_SIZE=0x4000
 
 NVMEM_WORD_SIZE=4
 NVMEM_OTP_MINER_HWID=63
+NVMEM_OTP_WIFI_MAC=66
 
 FACTORY_DEFAULT_TRUE_VAL="true"
 FACTORY_DEFAULT_FALSE_VAL="false"
@@ -65,6 +67,11 @@ bos_revision() {
 
 miner_hwid() {
 	cat "$MINER_HWID_PATH" 2>/dev/null
+	return 0
+}
+
+wifi_mac() {
+	cat "$WIFI_MAC_PATH" 2>/dev/null
 	return 0
 }
 

@@ -119,6 +119,24 @@ _config_fw_env() {
 	return 0
 }
 
+_config_wifi_mac() {
+	local wifi_mac=$(
+		dd if="$NVMEM_PATH" bs=$NVMEM_WORD_SIZE \
+			skip=$NVMEM_OTP_WIFI_MAC \
+			count=2 2>/dev/null \
+		| hexdump -n6 -e '5 1 "%02x:" 1 1 "%02x"'
+	)
+
+	if [ -z "$wifi_mac" ]; then
+		log_default_config "wifi_mac: Cannot read OTP memory!"
+		wifi_mac="00:11:22:33:44:55"
+	fi
+
+	log_default_config "wifi_mac: $wifi_mac"
+	echo "$wifi_mac" > "$WIFI_MAC_PATH"
+	return 0
+}
+
 default_config() {
 	. /lib/functions/bos-defaults.sh
 
@@ -126,6 +144,10 @@ default_config() {
 	_config_miner_hwid
 	_config_bos_platform
 	_config_bos_revision
+
+	if [ "$(board_name)" == $BRAIINS_BOARD_stm32mp157c_ii2_bmm1 ]; then
+		_config_wifi_mac
+	fi
 
 	# generate only if 'fw_env.config' does not exist
 	[ -e "$FW_ENV_CONFIG_PATH" ] || _config_fw_env
