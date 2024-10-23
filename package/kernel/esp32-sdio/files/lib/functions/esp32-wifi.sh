@@ -3,6 +3,8 @@
 ESP32_UART_PATH="/dev/ttySTM2"
 WIFI_BOOT_PIN_TIMEOUT=1
 
+. /lib/functions/bos-defaults.sh
+
 reboot_esp() {
     # The WIFI_RESET must be hold for some time so that ESP notices that
     # but it must be shorter than the WIFI_BOOT_PIN_TIMEOUT above.
@@ -45,6 +47,7 @@ flash_ng_firmware() {
 }
 
 start_wifi_ap() {
+    esp32-sdio-cli set_softap_mac_addr "$(wifi_mac)"
     esp32-sdio-cli softap_start "$1"
     ifup wifi_ap
 }
