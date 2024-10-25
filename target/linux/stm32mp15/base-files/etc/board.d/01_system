@@ -8,7 +8,7 @@ hostname="miner-$minerid"
 board_config_update
 
 ucidef_set_hostname "$hostname"
-ucidef_set_log 1024 "/var/log/syslog" 9
+ucidef_set_log 1536 "/var/log/syslog" 9
 
 board_config_flush
 
