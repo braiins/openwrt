@@ -5,7 +5,7 @@
 
 if is_factory_default; then
     disable_captive_portal
-    rm -rf "$FACTORY_DEFAULT_FLAG_PATH"
+    unset_factory_default
 
     echo "Rebooting to user-configured mode"
     reboot

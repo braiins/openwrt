@@ -30,6 +30,9 @@ UBOOT_ENV_FULL_SIZE=0x4000
 NVMEM_WORD_SIZE=4
 NVMEM_OTP_MINER_HWID=63
 
+FACTORY_DEFAULT_TRUE_VAL="true"
+FACTORY_DEFAULT_FALSE_VAL="false"
+
 bos_build() {
 	cat "$BOS_BUILD_PATH" 2>/dev/null
 	return 0
@@ -86,13 +89,23 @@ default_ssid() {
 }
 
 is_factory_default() {
-	if [ -f "${FACTORY_DEFAULT_FLAG_PATH}" ]; then
+	if [ "$(cat ${FACTORY_DEFAULT_FLAG_PATH} 2>/dev/null)" = "${FACTORY_DEFAULT_TRUE_VAL}" ]; then
 		echo yes
 		return 0
 	else
 		echo no
 		return 1
 	fi
+}
+
+set_factory_default() {
+	echo "${FACTORY_DEFAULT_TRUE_VAL}" > "${FACTORY_DEFAULT_FLAG_PATH}"
+	sync "${FACTORY_DEFAULT_FLAG_PATH}"
+}
+
+unset_factory_default() {
+	echo "${FACTORY_DEFAULT_FALSE_VAL}" > "${FACTORY_DEFAULT_FLAG_PATH}"
+	sync "${FACTORY_DEFAULT_FLAG_PATH}"
 }
 
 get_env_config() {
