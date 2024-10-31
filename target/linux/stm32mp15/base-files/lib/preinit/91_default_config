@@ -127,8 +127,8 @@ _config_wifi_mac() {
 		| hexdump -n6 -e '5 1 "%02x:" 1 1 "%02x"'
 	)
 
-	if [ -z "$wifi_mac" ]; then
-		log_default_config "wifi_mac: Cannot read OTP memory!"
+	if [ -z "$wifi_mac" ] || [ "$wifi_mac" = "00:00:00:00:00:00" ]; then
+		log_default_config "wifi_mac: Cannot read OTP memory or it's empty!"
 		wifi_mac="00:11:22:33:44:55"
 	fi
 
