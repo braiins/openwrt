@@ -128,8 +128,13 @@ _config_wifi_mac() {
 	)
 
 	if [ -z "$wifi_mac" ] || [ "$wifi_mac" = "00:00:00:00:00:00" ]; then
-		log_default_config "wifi_mac: Cannot read OTP memory or it's empty!"
-		wifi_mac="00:11:22:33:44:55"
+		log_default_config "wifi_mac: Cannot read OTP memory or it's empty, generating random MAC!"
+		
+		# The random MAC bellow intentionally starts with Hash Mining s.r.o prefix incremented by locally administered bit
+		# to avoid generating multicast MAC which could have unwanted side effects.
+		local braiins_prefix="8a:a6:ef:d1"
+		local random_suffix=$(hexdump -n2 -e '1 1 "%02x:" 1 1 "%02x"' /dev/urandom)
+		wifi_mac="${braiins_prefix}:${random_suffix}"
 	fi
 
 	log_default_config "wifi_mac: $wifi_mac"
