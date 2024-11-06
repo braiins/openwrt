@@ -7,39 +7,41 @@ board=$(bos_platform)
 
 case "$board" in
 	stm32mp157c-ii2-bmm1)
-		# Configure router metric for the LAN interface
-		uci -q set network.${FACTORY_DEFAULT_ETH_INTF_NAME}.metric='100'
+		if is_factory_default; then
+			# Configure router metric for the LAN interface
+			uci -q set network.${FACTORY_DEFAULT_ETH_INTF_NAME}.metric='100'
 
-		# Configure empty interface for the WiFi STA mode
-		uci -q batch <<-EOF
-			set network.${FACTORY_DEFAULT_STA_INTF_NAME}='interface'
-			set network.${FACTORY_DEFAULT_STA_INTF_NAME}.proto='dhcp'
-			set network.${FACTORY_DEFAULT_STA_INTF_NAME}.metric='1000'
-		EOF
+			# Configure empty interface for the WiFi STA mode
+			uci -q batch <<-EOF
+				set network.${FACTORY_DEFAULT_STA_INTF_NAME}='interface'
+				set network.${FACTORY_DEFAULT_STA_INTF_NAME}.proto='dhcp'
+				set network.${FACTORY_DEFAULT_STA_INTF_NAME}.metric='1000'
+			EOF
 
-		# Set static IP for the wifi AP interface and setup DHCP server
-		uci -q batch <<-EOF
-			set dhcp.${FACTORY_DEFAULT_AP_INTF_NAME}='dhcp'
-			set dhcp.${FACTORY_DEFAULT_AP_INTF_NAME}.interface='${FACTORY_DEFAULT_AP_INTF_NAME}'
-			set dhcp.${FACTORY_DEFAULT_AP_INTF_NAME}.start='100'
-			set dhcp.${FACTORY_DEFAULT_AP_INTF_NAME}.limit='150'
-			set dhcp.${FACTORY_DEFAULT_AP_INTF_NAME}.leasetime='1m'
-			set dhcp.${FACTORY_DEFAULT_AP_INTF_NAME}.dhcpv4='server'
-			set dhcp.${FACTORY_DEFAULT_AP_INTF_NAME}.dhcpv6='disabled'
-			set dhcp.${FACTORY_DEFAULT_AP_INTF_NAME}.ra='disabled'
-		EOF
+			# Set static IP for the wifi AP interface and setup DHCP server
+			uci -q batch <<-EOF
+				set dhcp.${FACTORY_DEFAULT_AP_INTF_NAME}='dhcp'
+				set dhcp.${FACTORY_DEFAULT_AP_INTF_NAME}.interface='${FACTORY_DEFAULT_AP_INTF_NAME}'
+				set dhcp.${FACTORY_DEFAULT_AP_INTF_NAME}.start='100'
+				set dhcp.${FACTORY_DEFAULT_AP_INTF_NAME}.limit='150'
+				set dhcp.${FACTORY_DEFAULT_AP_INTF_NAME}.leasetime='1m'
+				set dhcp.${FACTORY_DEFAULT_AP_INTF_NAME}.dhcpv4='server'
+				set dhcp.${FACTORY_DEFAULT_AP_INTF_NAME}.dhcpv6='disabled'
+				set dhcp.${FACTORY_DEFAULT_AP_INTF_NAME}.ra='disabled'
+			EOF
 
-		# Disable DHCP server on all known interfaces where we don't want DHCP server
-		uci -q batch <<-EOF
-			set dhcp.${FACTORY_DEFAULT_ETH_INTF_NAME}='dhcp'
-			set dhcp.${FACTORY_DEFAULT_ETH_INTF_NAME}.ignore=1
-			set dhcp.${FACTORY_DEFAULT_STA_INTF_NAME}='dhcp'
-			set dhcp.${FACTORY_DEFAULT_STA_INTF_NAME}.ignore=1
-		EOF
+			# Disable DHCP server on all known interfaces where we don't want DHCP server
+			uci -q batch <<-EOF
+				set dhcp.${FACTORY_DEFAULT_ETH_INTF_NAME}='dhcp'
+				set dhcp.${FACTORY_DEFAULT_ETH_INTF_NAME}.ignore=1
+				set dhcp.${FACTORY_DEFAULT_STA_INTF_NAME}='dhcp'
+				set dhcp.${FACTORY_DEFAULT_STA_INTF_NAME}.ignore=1
+			EOF
 
-		uci commit
+			uci commit
 
-		enable_captive_portal "${FACTORY_DEFAULT_AP_IP_ADDR}"
+			enable_captive_portal "${FACTORY_DEFAULT_AP_IP_ADDR}"
+		fi
 		;;
 esac
 
