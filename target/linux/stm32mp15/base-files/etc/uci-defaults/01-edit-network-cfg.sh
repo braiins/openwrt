@@ -15,7 +15,6 @@ case "$board" in
 
 		# Remove IPv6 config, we don't want it for now.
 		uci -q delete network.lan_temp6
-		uci -q delete dhcp.odhcpd
 	;;
 esac
 
