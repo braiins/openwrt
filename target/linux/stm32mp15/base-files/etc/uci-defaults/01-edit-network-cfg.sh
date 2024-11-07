@@ -11,7 +11,9 @@ case "$board" in
 	stm32mp157c-ii2-bmm1|stm32mp157c-ii1-am2)
 		# This is here for a special reason!
 		# See comments in /etc/board.d/02_network for details.
-		uci -q rename network.lan_temp='lan'
+		if uci -q get network.lan_temp && ! uci -q get network.lan; then
+			uci -q rename network.lan_temp='lan'
+		fi
 
 		# Remove IPv6 config, we don't want it for now.
 		uci -q delete network.lan_temp6
