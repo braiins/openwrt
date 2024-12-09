@@ -1,0 +1,37 @@
+. /lib/functions/bos-factory-default.sh
+
+LOG_PREFIX="wifi-wdt"
+
+#
+# Function returns 0 if the radio0 and at least one wifi-iface is enabled.
+#
+detect_wifi_enabled() {
+    local rc=1
+
+    local index=0
+    while uci -q get wireless.@wifi-iface[$index].disabled; do
+        if [ "$(uci -q get wireless.@wifi-iface[$index].disabled)" = "0" ]; then
+            rc=0
+            break
+        fi
+        index=$((index + 1))
+    done
+
+    if [ "$rc" -ne "1" ] && [ "$(uci -q get wireless.radio0.disabled)" = "1" ]; then
+        rc=1
+    fi
+
+    return $rc
+}
+
+if [ "${ACTION}" = "ifdown" ] && [ "${INTERFACE}" = "${FACTORY_DEFAULT_STA_INTF_NAME}" ]; then
+    logger -t "$LOG_PREFIX" "Interface ${FACTORY_DEFAULT_ETH_INTF_NAME} goes down, detecting if it should be reloaded.."
+
+    if detect_wifi_enabled; then
+        logger -t "$LOG_PREFIX" "WiFi enabled -> reloading"
+        wifi up
+    else
+        logger -t "$LOG_PREFIX" "WiFi NOT enabled"
+    fi
+fi
+
