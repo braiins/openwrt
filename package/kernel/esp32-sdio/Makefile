@@ -162,7 +162,7 @@ define KernelPackage/esp32-sdio-ng/install
 	$(INSTALL_BIN) ./files/etc/hotplug.d/ieee80211/00-copy-mac $(1)/etc/hotplug.d/ieee80211/00-copy-mac
 
 	$(INSTALL_DIR) $(1)/etc/hotplug.d/iface/
-	$(INSTALL_BIN) ./files/etc/hotplug.d/iface/50-wifi-wdt $(1)/etc/hotplug.d/ieee80211/50-wifi-wdt
+	$(INSTALL_BIN) ./files/etc/hotplug.d/iface/50-wifi-wdt $(1)/etc/hotplug.d/iface/50-wifi-wdt
 endef
 
 $(eval $(call KernelPackage,esp32-sdio-ng))
