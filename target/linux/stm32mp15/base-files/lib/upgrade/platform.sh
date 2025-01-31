@@ -24,6 +24,21 @@ source_sysupgrade_command() {
 	return 0
 }
 
+migrate_bosminer_config() {
+	# NOTE: For proper migration the file path has to be absolute
+	local version_file="/tmp/version.json"
+	local version_path="$(sysupgrade_dir)/version.json"
+
+	get_image "$@" | tar xf - "$version_path" -O > "$version_file" || true
+
+	# Send migration version config file path to boser tcp server
+	# If `version.json` file does not exist, then
+	# boser will fallback to downgrade config to version `2.0`
+	echo "downgrade_config:${version_file}" | bos-tools netcat localhost 4029 > /dev/null
+
+	return 0
+}
+
 has_command() {
 	type $1 >/dev/null 2>/dev/null
 }
@@ -106,6 +121,8 @@ platform_check_image() {
 	check_mandatory_command "package_do_upgrade" || return 1
 
 	call_sysupgrade_command "package_check_image" "$@"
+
+	migrate_bosminer_config "$@" || return 0
 }
 
 platform_pre_upgrade() {

@@ -40,6 +40,8 @@ define Build/stm32mp15-sysupgrade-tar
 	$(BOS_VERSION_SED_SCRIPT) $@.tmp/sysupgrade-$(BUILD_NAME)/COMMAND
 	cat COMMAND >> $@.tmp/sysupgrade-$(BUILD_NAME)/COMMAND
 
+	cp "$(CONFIG_VERSION_PATH)" "$@.tmp/sysupgrade-$(BUILD_NAME)/version.json"
+
 	$(foreach revision,default $(BOARD_REVISIONS), \
 		$(call copy-bootloaders,$(revision))
 	)
